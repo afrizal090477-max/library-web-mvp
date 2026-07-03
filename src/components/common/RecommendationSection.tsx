@@ -27,7 +27,6 @@ export const RecommendationSection = ({ selectedCategory }: { selectedCategory: 
     });
 
   const allBooks = data?.pages.flatMap((p) => p.data.books) || [];
-
   if (isLoading) return <div className="py-10 text-center">Memuat rekomendasi...</div>;
   if (isError) return <div className="py-10 text-center text-red-500">Gagal memuat.</div>;
 
@@ -40,7 +39,7 @@ export const RecommendationSection = ({ selectedCategory }: { selectedCategory: 
         </h2>
       </div>
 
-      {/* PERBAIKAN: Gunakan Grid agar pas 5 kolom di desktop (lg) dan 2 kolom di mobile */}
+      {/*  Gunakan Grid agar pas 5 kolom di desktop (lg) dan 2 kolom di mobile */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-[16px] md:gap-[20px] w-full justify-items-center">
         {allBooks.map((book) => (
           <Link 

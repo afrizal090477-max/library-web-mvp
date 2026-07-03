@@ -19,7 +19,6 @@ export const HeroSection = ({ covers = [] }: HeroSectionProps) => {
   if (!covers || !Array.isArray(covers) || covers.length === 0) {
     return (
       <section className="flex justify-center w-full px-4 py-4 md:px-0 md:py-8">
-        {/* PERBAIKAN: Gunakan w-full dan max-w agar responsif */}
         <div className="h-[132.67px] w-full max-w-[361px] animate-pulse rounded-[24px] bg-gray-200 md:h-[441px] md:max-w-[1200px]" />
       </section>
     );
@@ -27,7 +26,6 @@ export const HeroSection = ({ covers = [] }: HeroSectionProps) => {
 
   return (
     <section className="flex justify-center w-full px-4 py-4 md:px-0 md:py-8">
-      {/* PERBAIKAN: Gunakan w-full dan max-w di sini juga */}
       <div className="flex w-full max-w-[361px] flex-col items-center gap-2 md:max-w-[1200px] md:gap-4">
         
         <div className="relative h-[132.67px] w-full overflow-hidden rounded-[24px] bg-gradient-to-b from-[#58B0E8] to-[#E7E9FF] md:h-[441px]">

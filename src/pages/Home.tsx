@@ -49,7 +49,6 @@ export const Home = () => {
   };
 
   return (
-  // PERBAIKAN: Tambahkan overflow-x-hidden di sini
   <div className="w-full max-w-[1440px] mx-auto min-h-screen bg-[#FFFFFF] relative pt-[24px] md:pt-[40px] pb-[80px] overflow-x-hidden">
     <div className="mx-auto w-full md:max-w-[1200px] flex flex-col items-center md:items-start gap-[24px] md:gap-[48px] px-4 md:px-0">
       

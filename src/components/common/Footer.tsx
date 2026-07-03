@@ -15,13 +15,11 @@ const InstagramIcon = ({ className }: { className?: string }) => (
 
 export const Footer = () => {
   return (
-    // PERBAIKAN: py-[80px] diubah jadi py-[40px] md:py-[80px] agar pas di HP
     <footer className="w-full bg-[#FFFFFF] border-t border-[#D5D7DA] py-[40px] md:py-[80px] font-['Quicksand']">
       <div className="mx-auto w-full max-w-[1140px] flex flex-col items-center gap-[24px] md:gap-[40px] px-4">
         
         <div className="flex flex-col items-center gap-[16px] md:gap-[22px] w-full max-w-[800px]">
           <Logo size="lg" />
-          {/* PERBAIKAN: Text size 14px untuk mobile, 16px untuk desktop */}
           <p className="font-semibold text-[14px] md:text-[16px] leading-[28px] md:leading-[30px] tracking-[-0.02em] text-[#0A0D12] text-center">
             Platform perpustakaan digital terbaik untuk menemukan, membaca, dan meminjam ribuan koleksi buku pilihan kapan saja dan di mana saja.
           </p>

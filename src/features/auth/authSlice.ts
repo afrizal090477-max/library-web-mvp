@@ -9,7 +9,7 @@ interface AuthState {
   isLoading: boolean;
 }
 
-// Helper: Fungsi aman untuk mengambil data user dari localStorage
+// Fungsi aman untuk mengambil data user dari localStorage
 const getUserFromStorage = (): User | null => {
   try {
     const userStr = localStorage.getItem('user');
@@ -21,7 +21,7 @@ const getUserFromStorage = (): User | null => {
 };
 
 const initialState: AuthState = {
-  user: getUserFromStorage(), // PERBAIKAN: Ambil data user saat refresh
+  user: getUserFromStorage(), 
   token: localStorage.getItem('token'),
   isAuthenticated: !!localStorage.getItem('token'),
   isLoading: false,
@@ -36,7 +36,7 @@ const authSlice = createSlice({
       state.token = action.payload.token;
       state.isAuthenticated = true;
       
-      // PERBAIKAN: Simpan token DAN user ke localStorage
+      // Simpan token DAN user ke localStorage
       localStorage.setItem('token', action.payload.token);
       localStorage.setItem('user', JSON.stringify(action.payload.user));
     },
@@ -45,7 +45,7 @@ const authSlice = createSlice({
       state.token = null;
       state.isAuthenticated = false;
       
-      // PERBAIKAN: Hapus token DAN user dari localStorage saat logout
+      //  Hapus token DAN user dari localStorage saat logout
       localStorage.removeItem('token');
       localStorage.removeItem('user');
     },

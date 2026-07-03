@@ -17,20 +17,17 @@ interface BookListResponse {
 }
 
 interface BookListSectionProps {
-  selectedCategory?: string; // Bikin opsional
-  searchQuery?: string;      // Tambahkan prop pencarian
+  selectedCategory?: string; 
+  searchQuery?: string;      
 }
 
 export const BookListSection = ({ selectedCategory, searchQuery }: BookListSectionProps) => {
   const { data, isLoading, isError } = useQuery<BookListResponse>({
-    // Query key kita buat dinamis agar React Query me-refresh data kalau kategori/search berubah
     queryKey: ["books", selectedCategory, searchQuery],
     queryFn: async () => {
-      // Clean Code: Gunakan URLSearchParams agar URL rapi otomatis
       const params = new URLSearchParams();
       
       if (selectedCategory) params.append("category", selectedCategory);
-      // Sesuaikan key "search" ini dengan endpoint API backend-mu (bisa "search" atau "q")
       if (searchQuery) params.append("search", searchQuery); 
 
       const queryString = params.toString();

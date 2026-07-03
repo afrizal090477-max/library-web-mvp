@@ -17,12 +17,10 @@ import { toast } from 'sonner';
 export function DesktopNavbarAfterLogin() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const location = useLocation(); // <-- Untuk cek kita lagi di halaman mana
+  const location = useLocation(); 
   const { user } = useAppSelector((state) => state.auth); 
-  
   const cartItems = useAppSelector((state) => state.cart?.items || []);
   const cartCount = cartItems.length; 
-
   const [searchQuery, setSearchQuery] = useState("");
 
   // FITUR LIVE SEARCH DENGAN DEBOUNCE
@@ -35,16 +33,15 @@ export function DesktopNavbarAfterLogin() {
         // Jika input dikosongkan dan user sedang di halaman books, tampilkan semua buku
         navigate(`/books`, { replace: true });
       }
-    }, 500); // 500ms delay setelah user berhenti ngetik
+    }, 500); 
 
-    return () => clearTimeout(delayDebounceFn); // Cleanup fungsi kalau user lanjut ngetik
+    return () => clearTimeout(delayDebounceFn); 
   }, [searchQuery, navigate, location.pathname]);
 
   const handleLogout = () => {
     dispatch(logout());
     toast.success("Berhasil logout");
   };
-
   const userName = user?.name || "User";
   const userAvatar = user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=E0ECFF&color=1C65DA`;
 
@@ -60,7 +57,6 @@ export function DesktopNavbarAfterLogin() {
             placeholder="Search book..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            // onKeyDown={handleSearch} <-- Dihapus karena sudah otomatis pakai useEffect
             className="flex-1 bg-transparent outline-none font-['Quicksand'] font-medium text-[14px] leading-[28px] tracking-[-0.03em] text-[#0A0D12] placeholder:text-[#535862]" 
           />
         </div>

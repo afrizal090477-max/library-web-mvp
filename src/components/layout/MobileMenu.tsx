@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Logo } from "@/components/common/Logo";
 
 interface MobileMenuProps {
   onClose?: () => void;
@@ -8,33 +7,37 @@ interface MobileMenuProps {
 
 export function MobileMenu({ onClose }: MobileMenuProps) {
   return (
-    <div className="flex flex-col h-full">
-      {/* Logo (klik untuk close + ke Home) */}
-      <div
-        onClick={onClose}
-        className="flex items-center h-16 px-4 border-b cursor-pointer"
-      >
-        <Logo size="md" withText={false} />
-      </div>
-
-      <div className="flex flex-col gap-3 p-6">
+    // Posisi absolut, lebar penuh (393px di mobile), tinggi persis 72px, menempel di bawah Navbar
+    <div className="absolute left-0 right-0 top-[64px] flex flex-col items-start p-[16px] gap-[16px] w-full h-[72px] bg-white border-t border-[#D5D7DA] shadow-[0px_4px_20px_rgba(203,202,202,0.25)] z-50 font-['Quicksand'] animate-in slide-in-from-top-2 duration-200">
+      
+      {/* Container Tombol */}
+      <div className="flex flex-row items-center gap-[12px] w-full h-[40px]">
+        
+        {/* Tombol Login */}
         <Button
           asChild
           variant="outline"
-          className="justify-start w-full h-11"
+          className="flex-1 h-[40px] rounded-[100px] border border-[#D5D7DA] text-[#0A0D12] font-bold text-[14px] hover:bg-gray-50 transition-colors shadow-none"
           onClick={onClose}
         >
-          <Link to="/login">Login</Link>
+          <Link to="/login" className="flex items-center justify-center">
+            Login
+          </Link>
         </Button>
 
+        {/* Tombol Register */}
         <Button
           asChild
-          className="w-full justify-start h-11 bg-[#1C65DA]"
+          className="flex-1 h-[40px] rounded-[100px] bg-[#1C65DA] hover:bg-[#1652b4] text-[#FDFDFD] font-bold text-[14px] transition-colors shadow-none"
           onClick={onClose}
         >
-          <Link to="/register">Register</Link>
+          <Link to="/register" className="flex items-center justify-center">
+            Register
+          </Link>
         </Button>
+        
       </div>
+
     </div>
   );
 }

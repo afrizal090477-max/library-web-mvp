@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BookOpen, Check } from "lucide-react"; // ArrowLeft dihapus karena tidak dipakai
+import { BookOpen, Check } from "lucide-react"; 
 import { useAppSelector } from "@/hooks/useAppSelector";
 
 export default function Cart() {

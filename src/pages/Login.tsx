@@ -98,7 +98,6 @@ export default function Login() {
                   disabled={isLoading}
                 />
               </div>
-
               {/* Password */}
               <div className="space-y-1.5">
                 <Label

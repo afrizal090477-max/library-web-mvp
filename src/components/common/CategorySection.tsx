@@ -47,7 +47,7 @@ export const CategorySection = ({ activeCategory, onSelectCategory }: CategorySe
 
       {/* Mobile View */}
       <div className="flex flex-col w-full gap-[12px] mx-auto md:hidden">
-        {/* Baris Pertama (Tinggi 132px menyesuaikan teks 2 baris) */}
+        {/* Baris Pertama */}
         <div className="flex flex-row items-start gap-[12px] w-full">
           {CATEGORIES_DATA.slice(0, 3).map((category) => (
             <CategoryCard 
@@ -61,7 +61,7 @@ export const CategorySection = ({ activeCategory, onSelectCategory }: CategorySe
           ))}
         </div>
 
-        {/* Baris Kedua (Tinggi 108px menyesuaikan teks 1 baris) */}
+        {/* Baris Kedua */}
         <div className="flex flex-row items-start gap-[12px] w-full">
           {CATEGORIES_DATA.slice(3, 6).map((category) => (
             <CategoryCard 
@@ -92,8 +92,6 @@ const CategoryCard = ({ category, isActive, isDesktop, isRowOne, onClick }: Cate
   return (
     <Card
       onClick={() => onClick(category.id)} 
-      // PERBAIKAN 1: Tambahkan min-w-0 agar kartu berani menyusut ke samping
-      // PERBAIKAN 2: Hapus class p-0 yang bentrok dengan p-2/p-[8px]
       className={`flex flex-col bg-white border-0 shadow-[0px_0px_20px_rgba(203,202,202,0.25)] cursor-pointer transition-all hover:scale-[1.03] overflow-hidden min-w-0 ${
         isDesktop 
           ? "justify-center items-start p-[12px] w-[186.67px] h-[130px] rounded-[16px]" 
@@ -114,8 +112,6 @@ const CategoryCard = ({ category, isActive, isDesktop, isRowOne, onClick }: Cate
         />
       </div>
       
-      {/* Teks Label Kategori */}
-      {/* PERBAIKAN 3: Tambahkan whitespace-normal dan break-words agar teks membungkus rapi */}
       <span className={`font-semibold text-[#0A0D12] tracking-tight ${
         isDesktop 
           ? "w-[162.67px] text-[16px] leading-[30px] truncate mt-[12px] pl-1" 

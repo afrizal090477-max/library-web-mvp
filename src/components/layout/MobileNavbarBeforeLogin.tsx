@@ -1,34 +1,118 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+// HAPUS IMPORT SHEET DARI SHADCN
 import { Logo } from '@/components/common/Logo';
-import { Search, ShoppingBag, Menu } from 'lucide-react';
+import { Search, ShoppingBag, Menu, X } from 'lucide-react';
 import { MobileMenu } from './MobileMenu';
 
 export function MobileNavbarBeforeLogin() {
-  const cartCount = 0;
+  const cartCount = 0; // Bisa dihubungkan dengan state Redux nanti
+  const navigate = useNavigate();
+  
+  // State untuk mode Navbar
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  
+  // STATE BARU: Untuk buka/tutup menu hamburger (dropdown)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/books?search=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchOpen(false);
+      setSearchQuery("");
+    }
+  };
+
+  const handleCloseSearch = () => {
+    setIsSearchOpen(false);
+    setSearchQuery("");
+  };
 
   return (
-    <div className="flex h-16 items-center justify-between bg-white px-4 shadow-[0px_0px_20px_rgba(203,202,202,0.25)]">
-      <Logo size="md" withText={false} />
+    <div className="flex h-[64px] items-center justify-between bg-white px-[16px] shadow-[0px_0px_20px_rgba(203,202,202,0.25)] relative z-40 font-['Quicksand']">
+      
+      {!isSearchOpen ? (
+        // ==========================================
+        // MODE 1: NAVBAR NORMAL
+        // ==========================================
+        <>
+          <Logo size="md" withText={false} />
 
-      <div className="flex items-center gap-4">
-        <button className="text-[#0A0D12]"><Search className="w-5 h-5" /></button>
+          <div className="flex items-center gap-[16px]">
+            <button 
+              onClick={() => { setIsSearchOpen(true); setIsMenuOpen(false); }} 
+              className="text-[#0A0D12] hover:text-[#1C65DA] transition-colors outline-none"
+            >
+              <Search className="w-[24px] h-[24px]" />
+            </button>
 
-        <Link to="/cart" className="relative text-[#0A0D12]">
-          <ShoppingBag className="w-6 h-6" />
-          {cartCount > 0 && <Badge variant="destructive" className="absolute -right-1.5 -top-1.5 h-[17px] w-[17px] p-0 text-[10px]">{cartCount}</Badge>}
-        </Link>
+            <Link to="/cart" className="relative text-[#0A0D12] hover:text-[#1C65DA] transition-colors outline-none">
+              <ShoppingBag className="w-[28px] h-[28px]" />
+              {cartCount > 0 && (
+                <Badge variant="destructive" className="absolute -right-1.5 -top-1.5 h-[17px] w-[17px] flex items-center justify-center p-0 text-[10px]">
+                  {cartCount}
+                </Badge>
+              )}
+            </Link>
 
-        <Sheet>
-          <SheetTrigger asChild>
-            <button className="text-[#0A0D12]"><Menu className="w-6 h-6" /></button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-full max-w-full p-0 bg-white">
-            <MobileMenu />
-          </SheetContent>
-        </Sheet>
-      </div>
+            {/* TOMBOL HAMBURGER BIASA (Tanpa Sheet) */}
+            <button 
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="text-[#0A0D12] hover:text-[#1C65DA] transition-colors outline-none"
+            >
+              {isMenuOpen ? (
+                <X className="w-[28px] h-[28px]" />
+              ) : (
+                <Menu className="w-[28px] h-[28px]" />
+              )}
+            </button>
+          </div>
+        </>
+      ) : (
+        // ==========================================
+        // MODE 2: SEARCH MODE
+        // ==========================================
+        <div className="flex w-full items-center gap-[16px] animate-in fade-in zoom-in-95 duration-200">
+          
+          <div className="w-[40px] h-[40px] flex-shrink-0">
+            <Logo size="sm" withText={false} />
+          </div>
+          
+          <form 
+            onSubmit={handleSearchSubmit} 
+            className="flex-1 flex flex-row items-center px-[12px] py-[8px] gap-[6px] h-[40px] bg-white border border-[#D5D7DA] rounded-full focus-within:border-[#1C65DA] transition-colors"
+          >
+            <Search className="w-[20px] h-[20px] text-[#535862] flex-shrink-0" />
+            
+            <input 
+              type="text"
+              placeholder="Search book"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="flex-1 bg-transparent outline-none font-medium text-[14px] leading-[28px] text-[#535862] tracking-[-0.03em]"
+              autoFocus
+            />
+
+            <button 
+              type="button" 
+              onClick={handleCloseSearch} 
+              className="w-[24px] h-[24px] flex-shrink-0 flex items-center justify-center text-[#0A0D12] outline-none"
+            >
+              <X className="w-[20px] h-[20px]" strokeWidth={2} />
+            </button>
+          </form>
+
+        </div>
+      )}
+
+      {/* RENDER MOBILE MENU (DROPDOWN) JIKA isMenuOpen === true */}
+      {isMenuOpen && !isSearchOpen && (
+        <MobileMenu onClose={() => setIsMenuOpen(false)} />
+      )}
+
     </div>
   );
 }

@@ -137,7 +137,6 @@ export default function BookList() {
               <SheetTitle className="font-bold text-[20px] text-[#0A0D12]">Filter Koleksi</SheetTitle>
             </SheetHeader>
             <div className="overflow-y-auto py-[20px] flex-1">
-              {/* PERBAIKAN: Dipanggil sebagai variabel */}
               {filterContent}
             </div>
           </SheetContent>

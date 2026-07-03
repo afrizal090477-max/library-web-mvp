@@ -64,7 +64,7 @@ export interface Loan {
 }
 
 export interface BorrowedBook {
-  id: number; // <--- UBAH DI SINI (Hapus string | nya)
+  id: number; 
   title: string;
   author: string;
   category: string;
@@ -76,7 +76,7 @@ export interface BorrowedBook {
 }
 
 export interface Review {
-  id: number; // <--- UBAH DI SINI (Hapus string | nya)
+  id: number; 
   bookTitle?: string;
   date: string;
   rating: number;

@@ -104,7 +104,6 @@ export default function Checkout() {
             {/* Input Kalender (Read-Only) */}
             <div className="flex flex-col gap-[8px] w-full">
                <label className="font-bold text-[14px] text-[#0A0D12]">Return Date Plan</label>
-               {/* Ditambah cursor-not-allowed dan opacity untuk visual disabled */}
                <div className="flex flex-row items-center justify-between px-[16px] py-[8px] w-full h-[48px] bg-[#F5F5F5] border border-[#D5D7DA] rounded-[12px] cursor-not-allowed opacity-90" title="Tanggal dihitung otomatis berdasarkan durasi pinjam">
                 <span className="font-semibold text-[16px] text-[#0A0D12]">
                   {returnDateString}
@@ -113,7 +112,7 @@ export default function Checkout() {
               </div>
             </div>
 
-            {/* Input Durasi - SEKARANG BARIS KE BAWAH */}
+            {/* Input Durasi */}
             <div className="flex flex-col gap-[12px] w-full mt-2">
               <label className="font-bold text-[14px] md:text-[16px] text-[#0A0D12]">Borrow Duration</label>
               <div className="flex flex-col gap-[12px]">

@@ -1,6 +1,6 @@
 // src/pages/BookDetail.tsx
 import { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { getBookById, getBooksByCategory } from '@/lib/api';
 import { BookDetail as BookDetailType, Book } from '@/types';
 import { BookInfo } from '@/components/book/BookInfo';
@@ -14,11 +14,15 @@ import { toast } from 'sonner';
 export default function BookDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation(); // <-- Tambahan untuk mengambil URL saat ini
   const dispatch = useAppDispatch();
   
   const [book, setBook] = useState<BookDetailType | null>(null);
   const [related, setRelated] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Cek token dari localStorage
+  const token = localStorage.getItem('token');
 
   useEffect(() => {
     if (!id) return;
@@ -39,6 +43,13 @@ export default function BookDetail() {
 
   // LOGIKA REDUX UNTUK ADD TO CART
   const handleAddToCart = () => {
+    // 1. CEK LOGIN DULU
+    if (!token) {
+      toast.error('Silakan login terlebih dahulu untuk menambahkan buku ke keranjang.');
+      navigate('/login', { state: { from: location } });
+      return;
+    }
+
     if (!book) return;
     
     dispatch(addToCart({
@@ -53,6 +64,13 @@ export default function BookDetail() {
 
   // LOGIKA REDUX UNTUK BORROW NOW
   const handleBorrowNow = () => {
+    // 1. CEK LOGIN DULU
+    if (!token) {
+      toast.error('Silakan login terlebih dahulu untuk meminjam buku.');
+      navigate('/login', { state: { from: location } });
+      return;
+    }
+
     if (!book) return;
 
     dispatch(addToCart({
@@ -75,7 +93,7 @@ export default function BookDetail() {
       {/* Wrapper untuk Breadcrumb dan BookInfo dengan gap vertikal 24px */}
       <div className="flex flex-col gap-[24px]">
         
-        {/* Frame 101: Breadcrumb Active Folder */}
+        {/* Breadcrumb Active Folder */}
         <div className="flex flex-row items-center gap-[4px] h-[28px] w-full overflow-hidden">
           {/* Link ke Home */}
           <Link 
@@ -103,7 +121,7 @@ export default function BookDetail() {
           </span>
         </div>
 
-        {/* Book Info Section - Menerima fungsi dari parent */}
+        {/* Book Info Section */}
         <BookInfo 
           book={book} 
           onAddToCart={handleAddToCart} 

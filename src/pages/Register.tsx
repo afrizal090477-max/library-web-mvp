@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { setCredentials } from '@/features/auth/authSlice';
 import { register } from '@/lib/api';
+import { User } from '@/types'; // <-- IMPORT TIPE USER
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +13,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import Logo from '@/assets/logo-brand.svg';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
+
+// DEFINISIKAN TIPE RESPONSE-NYA DI SINI
+interface RegisterResponse {
+  data?: {
+    user: User;
+    token: string;
+  };
+  user?: User;
+  token?: string;
+}
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -37,9 +48,18 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      const { user, token } = await register(name, email, password);
+      // Ganti 'as any' menjadi 'as RegisterResponse'
+      const response = (await register(name, email, password)) as RegisterResponse;
+      
+      const user = response?.data?.user || response?.user;
+      const token = response?.data?.token || response?.token;
+
+      if (!user || !token) {
+         throw new Error("Gagal mengambil data user/token dari server.");
+      }
+
       dispatch(setCredentials({ user, token }));
-      toast.success("Registrasi berhasil! Akun kamu sudah dibuat.")
+      toast.success("Registrasi berhasil! Akun kamu sudah dibuat.");
       navigate('/');
     } catch (err) {
       if (err instanceof Error) {
@@ -173,9 +193,9 @@ export default function Register() {
 
             <div className="mt-6 text-sm text-center">
               <span className="text-[#6B7280]">Already have an account? </span>
-              <a href="/login" className="font-bold text-[#1C65DA] hover:underline">
+              <Link to="/login" className="font-bold text-[#1C65DA] hover:underline">
                 Login
-              </a>
+              </Link>
             </div>
           </CardContent>
         </Card>

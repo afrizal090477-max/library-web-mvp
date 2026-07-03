@@ -18,10 +18,7 @@ export function MobileNavbarAfterLogin() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-
   const { user } = useAppSelector((state) => state.auth);
-  
-  // MENGAMBIL DATA CART DARI REDUX (Tidak hardcode lagi)
   const cartItems = useAppSelector((state) => state.cart?.items || []);
   const cartCount = cartItems.length;
 
@@ -67,7 +64,7 @@ export function MobileNavbarAfterLogin() {
         />
       </div>
 
-      {/* Bagian Kanan (Cart & Dropdown User buatanmu) */}
+      {/* Bagian Kanan (Cart & Dropdown User) */}
       <div className="flex items-center gap-[12px] flex-shrink-0">
         
         {/* Shopping Cart */}

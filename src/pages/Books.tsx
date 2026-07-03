@@ -4,7 +4,6 @@ import { getBooks } from '@/lib/api';
 import { Book } from '@/types'; 
 import { BookCard } from '@/components/common/BookCard';
 
-// Pastikan interface ini ada atau di-import dari file types
 interface FetchBooksResponse {
   data?: {
     books?: Book[];
@@ -62,7 +61,7 @@ export default function Books() {
         </div>
       </div>
 
-      {/* Sekarang loading dan filteredBooks sudah dipakai di sini */}
+      {/* loading dan filteredBooks */}
       {loading ? (
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4 lg:grid-cols-5">
           {Array.from({ length: 10 }).map((_, i) => (

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import AuthorCard, { Author } from "./AuthorCard";
 
-// Interface menyesuaikan response API dari backend kamu
+
 interface ApiAuthor {
   id: number;
   name: string;
@@ -39,7 +39,7 @@ export const PopularAuthorsSection = () => {
   const mappedAuthors: Author[] = apiAuthors.map((author) => ({
     id: author.id,
     name: author.name,
-    totalBooks: author.bookCount, // Mapping dari bookCount ke totalBooks
+    totalBooks: author.bookCount,
     // Generate avatar berdasarkan nama author karena API belum menyediakan profileImage
     profileImage: `https://ui-avatars.com/api/?name=${encodeURIComponent(author.name)}&background=E0ECFF&color=1C65DA&size=150`,
   }));
