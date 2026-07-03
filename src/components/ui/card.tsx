@@ -12,9 +12,7 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        // Sesuai Figma: border radius 12px, border halus, background putih
         "group/card flex flex-col overflow-hidden rounded-[12px] border border-[#D5D7DA] bg-white text-sm text-[#0A0D12]",
-        // Padding disesuaikan
         size === "default" ? "p-6" : "p-4",
         className
       )}
@@ -38,7 +36,6 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-title"
       className={cn(
-        // Sesuai Figma: 28px, Quicksand Bold, tracking tight
         "text-[28px] font-bold tracking-[-0.02em] text-[#0A0D12]",
         className
       )}
@@ -52,7 +49,6 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-description"
       className={cn(
-        // Sesuai Figma description
         "text-base font-semibold text-[#414651]",
         className
       )}

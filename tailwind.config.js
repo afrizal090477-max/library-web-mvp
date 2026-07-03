@@ -11,7 +11,6 @@ export default {
         sans: ["Quicksand", "system-ui", "sans-serif"],
       },
       fontSize: {
-        // Display Scale (dari Figma)
         'display-3xl': ['56px', { lineHeight: '68px', letterSpacing: '-0.02em' }],
         'display-2xl': ['48px', { lineHeight: '60px', letterSpacing: '-0.02em' }],
         'display-xl': ['40px', { lineHeight: '56px', letterSpacing: '-0.02em' }],
@@ -20,7 +19,7 @@ export default {
         'display-sm': ['28px', { lineHeight: '38px', letterSpacing: '-0.02em' }],
         'display-xs': ['24px', { lineHeight: '36px', letterSpacing: '-0.02em' }],
 
-        // Text Scale
+
         'text-xl': ['20px', { lineHeight: '34px' }],
         'text-lg': ['18px', { lineHeight: '30px' }],
         'text-md': ['16px', { lineHeight: '30px' }],

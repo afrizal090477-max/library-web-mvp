@@ -1,13 +1,20 @@
-import { User } from "@/types";
+// src/lib/api.ts
 
-// ==================== CONFIG ====================
+// PERBAIKAN: Menambahkan import BorrowedBook dan Review
+import { Book, BookDetail, Author, Category, User, BorrowedBook, Review } from "@/types";
+
 const BASE_URL = "https://library-backend-production-b9cf.up.railway.app/api";
 
-// ==================== AUTH ====================
+const handleResponse = async <T>(res: Response): Promise<T> => {
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || "Terjadi kesalahan pada server");
+  }
+  return json;
+};
 
-export interface AuthResponse {
-  token: string;
-  user: User & { role: "user" | "admin" };
+interface ApiResponse<T> {
+  data: T;
 }
 
 export const login = async (email: string, password: string) => {
@@ -16,37 +23,103 @@ export const login = async (email: string, password: string) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   });
-
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message || "Login gagal");
-  }
-
-  const response = await res.json();
-
-  // Ambil dari dalam "data"
-  const { token, user } = response.data;
-
-  return { user, token };
+  
+  const result = await handleResponse<ApiResponse<{ user: User; token: string }>>(res);
+  return result.data;
 };
 
-export const register = async (
-  name: string,
-  email: string,
-  password: string
-) => {
+export const register = async (name: string, email: string, password: string) => {
   const res = await fetch(`${BASE_URL}/auth/register`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, email, password }),
   });
+  return handleResponse(res);
+};
 
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message || "Registrasi gagal");
-  }
+export const getBookById = async (id: number | string): Promise<BookDetail> => {
+  const res = await fetch(`${BASE_URL}/books/${id}`);
+  const result = await handleResponse<ApiResponse<BookDetail>>(res);
+  return result.data; 
+};
 
-  return res.json();
+export const getBooks = async (params?: Record<string, string | number>) => {
+  const query = params ? new URLSearchParams(params as Record<string, string>).toString() : "";
+  const res = await fetch(`${BASE_URL}/books?${query}`);
+  return handleResponse(res);
+};
+
+export const getBooksByCategory = async (categoryId: number, limit = 5): Promise<Book[]> => {
+  const res = await fetch(`${BASE_URL}/books?category=${categoryId}&limit=${limit}`);
+  const result = await handleResponse<ApiResponse<{ books: unknown[] }>>(res);
+  
+  return (result.data.books || []).map((item): Book => {
+    const b = item as Record<string, unknown>;
+    return {
+      id: Number(b.id),
+      title: String(b.title),
+      author: b.author as Author,
+      category: b.category as Category,
+      coverImage: String(b.coverImage ?? b.cover ?? ""),
+      description: String(b.description ?? ""),
+      stock: Number(b.stock ?? 0),
+      rating: Number(b.rating ?? 0),
+      reviewCount: Number(b.reviewCount ?? 0)
+    };
+  });
+};
+
+export const getRecommendedBooks = async (limit = 10): Promise<Book[]> => {
+  const res = await fetch(`${BASE_URL}/books/recommend?limit=${limit}`);
+  const result = await handleResponse<ApiResponse<{ books: Book[] }>>(res);
+  return result.data.books || [];
+};
+
+export const getPopularAuthors = async (limit = 5): Promise<Author[]> => {
+  const res = await fetch(`${BASE_URL}/authors/popular?limit=${limit}`);
+  const result = await handleResponse<ApiResponse<{ authors: Author[] }>>(res);
+  return result.data.authors || [];
+};
+
+export const getMe = async (token: string) => {
+  const res = await fetch(`${BASE_URL}/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return handleResponse(res);
+};
+
+// =========================================================
+// TAMBAHAN BARU UNTUK HALAMAN PROFILE & BORROWED LIST
+// =========================================================
+
+export const getBorrowedBooks = async (token?: string): Promise<BorrowedBook[]> => {
+  // Ambil token dari parameter, atau fallback ke localStorage
+  const authToken = token || localStorage.getItem('token');
+  
+  // NOTE: Pastikan endpoint /loans/me ini sesuai dengan dokumentasi API Backend-mu!
+  // (Bisa jadi namanya /borrows, /user/loans, dll)
+  const res = await fetch(`${BASE_URL}/loans/me`, { 
+    headers: { 
+      "Content-Type": "application/json",
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) 
+    },
+  });
+  
+  const result = await handleResponse<ApiResponse<BorrowedBook[]>>(res);
+  return result.data || [];
+};
+
+export const getUserReviews = async (token?: string): Promise<Review[]> => {
+  const authToken = token || localStorage.getItem('token');
+  
+  // NOTE: Pastikan endpoint /reviews/me ini sesuai dengan dokumentasi API Backend-mu!
+  const res = await fetch(`${BASE_URL}/reviews/me`, { 
+    headers: { 
+      "Content-Type": "application/json",
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) 
+    },
+  });
+  
+  const result = await handleResponse<ApiResponse<Review[]>>(res);
+  return result.data || [];
 };

@@ -9,4 +9,13 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    proxy: {
+      "/api": {
+        target: "https://library-backend-production-b9cf.up.railway.app",
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 })
