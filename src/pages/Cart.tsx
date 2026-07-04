@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { BookOpen, Check } from "lucide-react"; 
+import { BookOpen, Check, Trash2 } from "lucide-react"; 
 import { useAppSelector } from "@/hooks/useAppSelector";
+import { useAppDispatch } from "@/hooks/useAppDispatch"; 
+import { removeFromCart, clearCart } from "@/features/cart/cartSlice"; 
 
 export default function Cart() {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch(); 
   const cartItems = useAppSelector((state) => state.cart?.items || []);
+  
   const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
-  const isAllSelected =
-    cartItems.length > 0 && selectedIds.length === cartItems.length;
+  const isAllSelected = cartItems.length > 0 && selectedIds.length === cartItems.length;
 
   const handleSelectAll = () => {
     if (isAllSelected) {
@@ -29,6 +32,18 @@ export default function Cart() {
   const handleProceedToCheckout = () => {
     if (selectedIds.length === 0) return;
     navigate("/checkout", { state: { selectedIds } });
+  };
+
+  const handleRemoveItem = (itemId: string | number) => {
+    if (!window.confirm("Hapus buku ini dari keranjang?")) return;
+    dispatch(removeFromCart(itemId));
+    setSelectedIds((prev) => prev.filter((id) => id !== itemId));
+  };
+
+  const handleClearCart = () => {
+    if (!window.confirm("Kosongkan semua isi keranjang?")) return;
+    dispatch(clearCart());
+    setSelectedIds([]);
   };
 
   return (
@@ -54,24 +69,35 @@ export default function Cart() {
         ) : (
           <div className="flex flex-col lg:flex-row gap-[40px] items-start w-full">
             <div className="flex-1 w-full flex flex-col gap-[24px]">
-              <label
-                onClick={handleSelectAll}
-                className="flex flex-row items-center gap-[16px] cursor-pointer w-fit group"
-              >
-                <div
-                  className={`flex items-center justify-center w-[20px] h-[20px] rounded-[6px] border ${isAllSelected ? "bg-[#1C65DA] border-[#1C65DA]" : "border-[#A4A7AE] bg-white group-hover:border-[#1C65DA]"} transition-colors`}
+              
+              <div className="flex items-center justify-between w-full border-b border-[#D5D7DA] pb-[16px]">
+                <label
+                  onClick={handleSelectAll}
+                  className="flex flex-row items-center gap-[16px] cursor-pointer w-fit group"
                 >
-                  {isAllSelected && (
-                    <Check
-                      className="w-[12px] h-[12px] text-white"
-                      strokeWidth={3}
-                    />
-                  )}
-                </div>
-                <span className="font-semibold text-[16px] leading-[30px] tracking-[-0.02em] text-[#0A0D12]">
-                  Select All
-                </span>
-              </label>
+                  <div
+                    className={`flex items-center justify-center w-[20px] h-[20px] rounded-[6px] border ${isAllSelected ? "bg-[#1C65DA] border-[#1C65DA]" : "border-[#A4A7AE] bg-white group-hover:border-[#1C65DA]"} transition-colors`}
+                  >
+                    {isAllSelected && (
+                      <Check
+                        className="w-[12px] h-[12px] text-white"
+                        strokeWidth={3}
+                      />
+                    )}
+                  </div>
+                  <span className="font-semibold text-[16px] leading-[30px] tracking-[-0.02em] text-[#0A0D12]">
+                    Select All
+                  </span>
+                </label>
+
+                <button 
+                  onClick={handleClearCart}
+                  className="flex items-center gap-2 text-[#EE1D52] hover:text-[#c41541] font-bold text-[14px] transition-colors"
+                >
+                  <Trash2 size={16} />
+                  Clear Cart
+                </button>
+              </div>
 
               <div className="flex flex-col w-full gap-[16px]">
                 {cartItems.map((item) => {
@@ -79,7 +105,7 @@ export default function Cart() {
                   return (
                     <div
                       key={item.id}
-                      className="flex flex-row items-center gap-[16px] w-full border-b border-[#D5D7DA] pb-[16px]"
+                      className="flex flex-row items-center gap-[16px] w-full border-b border-[#D5D7DA] pb-[16px] relative"
                     >
                       <label className="p-2 -ml-2 cursor-pointer">
                         <input
@@ -117,13 +143,21 @@ export default function Cart() {
                             Category
                           </span>
                         </div>
-                        <h3 className="font-bold text-[16px] md:text-[18px] leading-[30px] md:leading-[32px] tracking-[-0.03em] text-[#0A0D12] line-clamp-2">
+                        <h3 className="font-bold text-[16px] md:text-[18px] leading-[30px] md:leading-[32px] tracking-[-0.03em] text-[#0A0D12] line-clamp-2 pr-8">
                           {item.title}
                         </h3>
                         <p className="font-medium text-[14px] md:text-[16px] leading-[28px] md:leading-[30px] tracking-[-0.03em] text-[#414651]">
                           {item.author || "Unknown Author"}
                         </p>
                       </div>
+
+                      <button 
+                        onClick={() => handleRemoveItem(item.id)}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 p-2 text-[#A4A7AE] hover:text-[#EE1D52] hover:bg-[#FEE4E2] rounded-full transition-colors"
+                      >
+                        <Trash2 size={20} />
+                      </button>
+                      
                     </div>
                   );
                 })}

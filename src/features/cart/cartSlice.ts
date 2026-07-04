@@ -12,7 +12,7 @@ interface CartState {
 }
 
 const initialState: CartState = {
-  items: [], 
+  items: JSON.parse(localStorage.getItem('booky_cart_items') || '[]'), 
 };
 
 const cartSlice = createSlice({
@@ -23,13 +23,16 @@ const cartSlice = createSlice({
       const isExist = state.items.some((item) => item.id === action.payload.id);
       if (!isExist) {
         state.items.push(action.payload);
+        localStorage.setItem('booky_cart_items', JSON.stringify(state.items));
       }
     },
     removeFromCart: (state, action: PayloadAction<string | number>) => {
       state.items = state.items.filter((item) => item.id !== action.payload);
+      localStorage.setItem('booky_cart_items', JSON.stringify(state.items));
     },
     clearCart: (state) => {
       state.items = [];
+      localStorage.removeItem('booky_cart_items');
     },
   },
 });

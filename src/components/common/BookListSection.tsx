@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom"; 
 import BookCard from "./BookCard";
 import { Book } from "@/types"; 
 
@@ -19,16 +20,15 @@ interface BookListResponse {
 interface BookListSectionProps {
   selectedCategory?: string; 
   searchQuery?: string;      
+  selectedRating?: number;   
 }
 
-export const BookListSection = ({ selectedCategory, searchQuery }: BookListSectionProps) => {
+export const BookListSection = ({ selectedCategory, searchQuery, selectedRating }: BookListSectionProps) => {
   const { data, isLoading, isError } = useQuery<BookListResponse>({
-    queryKey: ["books", selectedCategory, searchQuery],
+    queryKey: ["books", selectedCategory, searchQuery, selectedRating], 
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (selectedCategory) params.append("category", selectedCategory);
       if (searchQuery) params.append("search", searchQuery); 
-
       const queryString = params.toString();
       const url = `https://library-backend-production-b9cf.up.railway.app/api/books${queryString ? `?${queryString}` : ""}`;
       const response = await fetch(url);
@@ -55,18 +55,35 @@ export const BookListSection = ({ selectedCategory, searchQuery }: BookListSecti
       </div>
     );
   }
-  const books = data?.data?.books || [];
+
+  let books = data?.data?.books || [];
+
+  if (selectedCategory) {
+    books = books.filter((book) => book.category?.name === selectedCategory);
+  }
+  if (selectedRating) {
+    books = books.filter((book) => {
+      const bookRating = book.rating || 0;
+      return Math.floor(bookRating) === selectedRating;
+    });
+  }
 
   return (
     <div className="w-full mt-4 md:mt-8">
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-[20px]">
         {books.length > 0 ? (
           books.map((book) => (
-            <BookCard key={book.id} book={book} />
+            <Link 
+              key={book.id} 
+              to={`/books/${book.id}`} 
+              className="block cursor-pointer transition-transform hover:scale-[1.02] duration-300"
+            >
+              <BookCard book={book} />
+            </Link>
           ))
         ) : (
           <div className="col-span-full text-center py-10 text-[#414651] font-['Quicksand'] font-medium">
-            Tidak ada buku yang ditemukan.
+            Tidak ada buku yang ditemukan untuk filter ini.
           </div>
         )}
       </div>

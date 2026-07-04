@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 
 import iconFiction from "@/assets/icons/Fiksi.png";
@@ -10,17 +11,22 @@ import iconEducation from "@/assets/icons/Education-Reference.png";
 interface CategoryItem {
   id: string;
   name: string;
-  slug: string;
   iconSrc: string;
 }
 
-const CATEGORIES_DATA: CategoryItem[] = [
-  { id: "4", name: "Fiction", slug: "fiction", iconSrc: iconFiction },
-  { id: "2", name: "Non-Fiction", slug: "non-fiction", iconSrc: iconNonFiction }, 
-  { id: "7", name: "Self-Improvement", slug: "self-improvement", iconSrc: iconSelfImprovement },
-  { id: "9", name: "Finance", slug: "finance-business", iconSrc: iconFinance }, 
-  { id: "11", name: "Science", slug: "science-technology", iconSrc: iconScience },
-  { id: "8", name: "Education", slug: "education-reference", iconSrc: iconEducation },
+interface CategoryAPI {
+  id: number;
+  name: string;
+}
+
+// 🚀 FIX 1: Hapus ID Hardcode! Kita cuma simpan nama UI dan gambar ikonnya aja
+const CATEGORIES_UI = [
+  { name: "Fiction", iconSrc: iconFiction },
+  { name: "Non-Fiction", iconSrc: iconNonFiction }, 
+  { name: "Self-Improvement", iconSrc: iconSelfImprovement },
+  { name: "Finance", iconSrc: iconFinance }, 
+  { name: "Science", iconSrc: iconScience },
+  { name: "Education", iconSrc: iconEducation },
 ];
 
 interface CategorySectionProps {
@@ -29,14 +35,46 @@ interface CategorySectionProps {
 }
 
 export const CategorySection = ({ activeCategory, onSelectCategory }: CategorySectionProps) => {
+  const [dynamicCategories, setDynamicCategories] = useState<CategoryItem[]>([]);
+
+  // 🚀 FIX 2: Tarik ID asli dari database, lalu kawinkan dengan gambar ikon lokal
+  useEffect(() => {
+    const fetchAndMergeCategories = async () => {
+      try {
+        const res = await fetch("https://library-backend-production-b9cf.up.railway.app/api/categories");
+        const json = await res.json();
+        const dbCats: CategoryAPI[] = Array.isArray(json.data) ? json.data : json.data?.categories || [];
+
+        const mergedCategories = CATEGORIES_UI.map((uiCat) => {
+          // Cari ID asli di database berdasarkan kecocokan nama
+          const foundInDb = dbCats.find((dbCat) => 
+            dbCat.name.toLowerCase().includes(uiCat.name.toLowerCase())
+          );
+          
+          return {
+            id: foundInDb ? foundInDb.id.toString() : "", // Ambil ID asli DB!
+            name: uiCat.name,
+            iconSrc: uiCat.iconSrc
+          };
+        });
+
+        setDynamicCategories(mergedCategories);
+      } catch (error) {
+        console.error("Gagal sinkronisasi kategori:", error);
+      }
+    };
+
+    fetchAndMergeCategories();
+  }, []);
+
   return (
     <div className="w-full max-w-[361px] md:max-w-[1200px] font-['Quicksand'] select-none mx-auto">
       <div className="hidden md:flex flex-row items-center gap-[16px] w-full h-[130px]">
-        {CATEGORIES_DATA.map((category) => (
+        {dynamicCategories.map((category, index) => (
           <CategoryCard 
-            key={category.id} 
+            key={category.id || index} 
             category={category} 
-            isActive={activeCategory === category.id} 
+            isActive={activeCategory === category.id && category.id !== ""} 
             onClick={onSelectCategory}
             isDesktop={true}
           />
@@ -45,11 +83,11 @@ export const CategorySection = ({ activeCategory, onSelectCategory }: CategorySe
 
       <div className="flex flex-col w-full gap-[12px] mx-auto md:hidden">
         <div className="flex flex-row items-start gap-[12px] w-full">
-          {CATEGORIES_DATA.slice(0, 3).map((category) => (
+          {dynamicCategories.slice(0, 3).map((category, index) => (
             <CategoryCard 
-              key={category.id} 
+              key={category.id || index} 
               category={category} 
-              isActive={activeCategory === category.id} 
+              isActive={activeCategory === category.id && category.id !== ""} 
               onClick={onSelectCategory}
               isDesktop={false}
               isRowOne={true}
@@ -58,11 +96,11 @@ export const CategorySection = ({ activeCategory, onSelectCategory }: CategorySe
         </div>
 
         <div className="flex flex-row items-start gap-[12px] w-full">
-          {CATEGORIES_DATA.slice(3, 6).map((category) => (
+          {dynamicCategories.slice(3, 6).map((category, index) => (
             <CategoryCard 
-              key={category.id} 
+              key={category.id || index} 
               category={category} 
-              isActive={activeCategory === category.id}
+              isActive={activeCategory === category.id && category.id !== ""}
               onClick={onSelectCategory}
               isDesktop={false}
               isRowOne={false}
@@ -70,7 +108,6 @@ export const CategorySection = ({ activeCategory, onSelectCategory }: CategorySe
           ))}
         </div>
       </div>
-
     </div>
   );
 };
@@ -86,7 +123,10 @@ interface CategoryCardProps {
 const CategoryCard = ({ category, isActive, isDesktop, isRowOne, onClick }: CategoryCardProps) => {
   return (
     <Card
-      onClick={() => onClick(category.id)} 
+      // 🚀 FIX 3: Klik hanya jalan kalau ID aslinya berhasil ketarik
+      onClick={() => {
+        if (category.id) onClick(category.id);
+      }} 
       className={`flex flex-col bg-white border-0 shadow-[0px_0px_20px_rgba(203,202,202,0.25)] cursor-pointer transition-all hover:scale-[1.03] overflow-hidden min-w-0 ${
         isDesktop 
           ? "justify-center items-start p-[12px] w-[186.67px] h-[130px] rounded-[16px]" 

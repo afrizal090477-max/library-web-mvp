@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, Star, Check } from 'lucide-react';
 import BookListSection from '@/components/common/BookListSection';
@@ -10,28 +10,49 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
-const CATEGORIES = [
-  "Fiction",
-  "Non-Fiction",
-  "Self-Improvement",
-  "Finance & Business",
-  "Science & Technology",
-  "Education & Reference"
-];
-
 const RATINGS = [5, 4, 3, 2, 1];
 
+interface CategoryAPI {
+  id: number;
+  name: string;
+}
+
 export default function BookList() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [dbCategories, setDbCategories] = useState<CategoryAPI[]>([]);
+  
   const searchQuery = searchParams.get('q') || undefined;
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedRating, setSelectedRating] = useState<number | null>(null);
-  const handleCategoryToggle = (category: string) => {
-    setSelectedCategories((prev) => 
-      prev.includes(category) 
-        ? prev.filter((c) => c !== category) 
-        : [...prev, category]
-    );
+  const categoryQuery = searchParams.get('category') || undefined; 
+  const ratingQuery = searchParams.get('rating') ? Number(searchParams.get('rating')) : undefined; 
+
+  useEffect(() => {
+    fetch('https://library-backend-production-b9cf.up.railway.app/api/categories')
+      .then((res) => res.json())
+      .then((json) => {
+        const cats = Array.isArray(json.data) ? json.data : json.data?.categories || [];
+        setDbCategories(cats);
+      })
+      .catch((err) => console.error("Gagal load categories", err));
+  }, []);
+
+  const handleCategoryToggle = (categoryName: string) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (categoryQuery === categoryName) {
+      newParams.delete('category'); 
+    } else {
+      newParams.set('category', categoryName); 
+    }
+    setSearchParams(newParams);
+  };
+
+  const handleRatingToggle = (rating: number) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (ratingQuery === rating) {
+      newParams.delete('rating');
+    } else {
+      newParams.set('rating', rating.toString());
+    }
+    setSearchParams(newParams);
   };
 
   const filterContent = (
@@ -45,23 +66,28 @@ export default function BookList() {
         </h4>
         
         <div className="flex flex-col w-full gap-[8px] mt-2">
-          {CATEGORIES.map((category) => {
-            const isChecked = selectedCategories.includes(category);
-            return (
-              <label 
-                key={category} 
-                onClick={() => handleCategoryToggle(category)} 
-                className="flex flex-row items-center gap-[8px] w-full cursor-pointer group"
-              >
-                <div className={`flex items-center justify-center w-[20px] h-[20px] rounded-[6px] border ${isChecked ? 'bg-[#1C65DA] border-[#1C65DA]' : 'border-[#A4A7AE] bg-white group-hover:border-[#1C65DA]'} transition-colors`}>
-                  {isChecked && <Check className="w-[12px] h-[12px] text-white" strokeWidth={3} />}
+          {dbCategories.length === 0 ? (
+            <span className="text-sm text-gray-500 font-quicksand animate-pulse">Memuat kategori...</span>
+          ) : (
+            dbCategories.map((category) => {
+              const isChecked = categoryQuery === category.name;
+              
+              return (
+                <div 
+                  key={category.id} 
+                  onClick={() => handleCategoryToggle(category.name)} 
+                  className="flex flex-row items-center gap-[8px] w-full cursor-pointer group select-none"
+                >
+                  <div className={`flex items-center justify-center w-[20px] h-[20px] rounded-[6px] border ${isChecked ? 'bg-[#1C65DA] border-[#1C65DA]' : 'border-[#A4A7AE] bg-white group-hover:border-[#1C65DA]'} transition-colors`}>
+                    {isChecked && <Check className="w-[12px] h-[12px] text-white" strokeWidth={3} />}
+                  </div>
+                  <span className="flex-1 font-medium text-[16px] leading-[30px] tracking-[-0.03em] text-[#0A0D12]">
+                    {category.name}
+                  </span>
                 </div>
-                <span className="flex-1 font-medium text-[16px] leading-[30px] tracking-[-0.03em] text-[#0A0D12]">
-                  {category}
-                </span>
-              </label>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
 
@@ -73,12 +99,12 @@ export default function BookList() {
         
         <div className="flex flex-col w-full gap-[8px] mt-2">
           {RATINGS.map((rating) => {
-            const isChecked = selectedRating === rating;
+            const isChecked = ratingQuery === rating;
             return (
-              <label 
+              <div 
                 key={rating} 
-                onClick={() => setSelectedRating(isChecked ? null : rating)}
-                className="flex flex-row items-center gap-[8px] w-full cursor-pointer group" 
+                onClick={() => handleRatingToggle(rating)}
+                className="flex flex-row items-center gap-[8px] w-full cursor-pointer group select-none" 
               >
                 <div className={`flex items-center justify-center w-[20px] h-[20px] rounded-[6px] border ${isChecked ? 'bg-[#1C65DA] border-[#1C65DA]' : 'border-[#A4A7AE] bg-white group-hover:border-[#1C65DA]'} transition-colors`}>
                   {isChecked && <Check className="w-[12px] h-[12px] text-white" strokeWidth={3} />}
@@ -89,7 +115,7 @@ export default function BookList() {
                     {rating}
                   </span>
                 </div>
-              </label>
+              </div>
             );
           })}
         </div>
@@ -104,9 +130,9 @@ export default function BookList() {
           <h1 className="font-bold text-[24px] md:text-[36px] leading-[36px] md:leading-[44px] text-[#0A0D12]">
             Book List
           </h1>
-          {searchQuery && (
+          {(searchQuery || categoryQuery || ratingQuery) && (
             <p className="mt-2 text-[14px] md:text-[16px] text-[#535862] font-medium">
-              Menampilkan hasil untuk: <span className="font-bold text-[#1C65DA]">"{searchQuery}"</span>
+              Menampilkan hasil untuk filter aktif
             </p>
           )}
         </div>
@@ -136,7 +162,8 @@ export default function BookList() {
           <div className="flex-1 w-full min-w-0">
             <BookListSection 
               searchQuery={searchQuery} 
-              selectedCategory={selectedCategories.length > 0 ? selectedCategories[0] : undefined}
+              selectedCategory={categoryQuery} 
+              selectedRating={ratingQuery} 
             />
           </div>
           

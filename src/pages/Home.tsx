@@ -30,7 +30,7 @@ export const Home = () => {
   const { data: apiResponse } = useQuery<ApiResponse>({
     queryKey: ["recommendedBooks"],
     queryFn: async () => {
-      const response = await fetch("https://library-backend-production-b9cf.up.railway.app/api/books/recommend");
+      const response = await fetch("/api/books/recommend");
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
