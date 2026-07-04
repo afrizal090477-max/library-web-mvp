@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-// Definisikan tipe data buku yang masuk keranjang
 export interface CartItem {
   id: string | number;
   title: string;
@@ -13,7 +12,7 @@ interface CartState {
 }
 
 const initialState: CartState = {
-  items: [], // Default keranjang kosong
+  items: [], 
 };
 
 const cartSlice = createSlice({
@@ -21,7 +20,6 @@ const cartSlice = createSlice({
   initialState,
   reducers: {
     addToCart: (state, action: PayloadAction<CartItem>) => {
-      // Mencegah duplikasi buku yang sama di keranjang
       const isExist = state.items.some((item) => item.id === action.payload.id);
       if (!isExist) {
         state.items.push(action.payload);

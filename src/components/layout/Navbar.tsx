@@ -9,12 +9,9 @@ export function Navbar() {
 
   return (
     <nav className="absolute top-0 left-0 z-50 w-full bg-white shadow-[0px_0px_20px_rgba(203,202,202,0.25)]">
-      {/* Desktop */}
       <div className="hidden md:block">
         {user ? <DesktopNavbarAfterLogin /> : <DesktopNavbarBeforeLogin />}
       </div>
-
-      {/* Mobile */}
       <div className="md:hidden">
         {user ? <MobileNavbarAfterLogin /> : <MobileNavbarBeforeLogin />}
       </div>

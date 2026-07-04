@@ -12,10 +12,8 @@ export const HeroSection = ({ covers = [] }: HeroSectionProps) => {
     const slideInterval = setInterval(() => {
       setCurrentSlide((prev) => (prev === covers.length - 1 ? 0 : prev + 1));
     }, 5000);
-
     return () => clearInterval(slideInterval);
   }, [covers]);
-
   if (!covers || !Array.isArray(covers) || covers.length === 0) {
     return (
       <section className="flex justify-center w-full px-4 py-4 md:px-0 md:py-8">

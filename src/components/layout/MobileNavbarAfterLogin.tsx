@@ -21,9 +21,7 @@ export function MobileNavbarAfterLogin() {
   const { user } = useAppSelector((state) => state.auth);
   const cartItems = useAppSelector((state) => state.cart?.items || []);
   const cartCount = cartItems.length;
-
   const userAvatar = user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=E0ECFF&color=1C65DA`;
-  // STATE UNTUK LIVE SEARCH
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
@@ -34,7 +32,6 @@ export function MobileNavbarAfterLogin() {
         navigate(`/books`, { replace: true });
       }
     }, 500);
-
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery, navigate, location.pathname]);
 
@@ -43,15 +40,12 @@ export function MobileNavbarAfterLogin() {
     toast.success("Berhasil logout");
   };
 
+  
   return (
     <div className="flex h-[64px] w-full items-center justify-between bg-[#FFFFFF] px-[16px] shadow-[0px_0px_20px_rgba(203,202,202,0.25)] gap-[12px]">
-      
-      {/* Logo */}
       <div className="flex-shrink-0">
         <Logo size="md" withText={false} />
       </div>
-
-      {/* SEARCH BAR MOBILE: Lebar otomatis menyesuaikan layar (flex-1) */}
       <div className="flex flex-1 min-w-0 items-center h-[40px] px-[12px] py-[8px] gap-[6px] bg-[#FFFFFF] border border-[#D5D7DA] rounded-full focus-within:border-[#1C65DA] focus-within:ring-1 focus-within:ring-[#1C65DA] transition-all box-border">
         <Search className="w-[20px] h-[20px] text-[#535862] flex-shrink-0" />
         <input 
@@ -63,10 +57,7 @@ export function MobileNavbarAfterLogin() {
         />
       </div>
 
-      {/* Bagian Kanan (Cart & Dropdown User) */}
       <div className="flex items-center gap-[12px] flex-shrink-0">
-        
-        {/* Shopping Cart */}
         <Link to="/cart" className="relative text-[#0A0D12] hover:text-[#1C65DA] transition-colors">
           <ShoppingBag className="w-[24px] h-[24px]" />
           {cartCount > 0 && (
@@ -76,7 +67,6 @@ export function MobileNavbarAfterLogin() {
           )}
         </Link>
 
-        {/* Dropdown Menu Mobile */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="outline-none focus:ring-2 focus:ring-[#1C65DA] rounded-full flex-shrink-0">

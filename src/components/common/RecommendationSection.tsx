@@ -32,14 +32,12 @@ export const RecommendationSection = ({ selectedCategory }: { selectedCategory: 
 
   return (
     <section className="flex flex-col items-center w-full max-w-[1200px] gap-[40px] font-['Quicksand'] mx-auto px-4 md:px-0">
-      {/* Title */}
       <div className="w-full text-left">
         <h2 className="font-bold text-[24px] md:text-[36px] leading-[44px] text-[#0A0D12]">
           Recommendation
         </h2>
       </div>
 
-      {/*  Gunakan Grid agar pas 5 kolom di desktop (lg) dan 2 kolom di mobile */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-[16px] md:gap-[20px] w-full justify-items-center">
         {allBooks.map((book) => (
           <Link 
@@ -52,7 +50,6 @@ export const RecommendationSection = ({ selectedCategory }: { selectedCategory: 
         ))}
       </div>
 
-      {/* Button Load More */}
       {hasNextPage && (
         <button
           onClick={() => fetchNextPage()}

@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Search, Star } from 'lucide-react';
 
-// Interface sudah disesuaikan 100% dengan JSON API
+
 interface Review {
   id: number;
-  star: number; // API pakai 'star'
-  comment: string | null; // API bisa me-return null
+  star: number; 
+  comment: string | null; 
   createdAt: string; 
   book: {
     id: number;
@@ -32,8 +32,6 @@ export function ReviewsTab() {
       setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        
-        // 🚀 Panggil API beneran ke backend (URL SUDAH DIPERBAIKI)
         const response = await fetch('https://library-backend-production-b9cf.up.railway.app/api/me/reviews?page=1&limit=20', {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -42,8 +40,6 @@ export function ReviewsTab() {
         });
         
         const json = await response.json();
-        
-        // Ambil array dari json.data.reviews sesuai struktur API kamu
         if (json.success && json.data && Array.isArray(json.data.reviews)) {
           setReviews(json.data.reviews);
         } else {
@@ -60,12 +56,10 @@ export function ReviewsTab() {
     fetchMyReviews();
   }, []);
 
-  // Fitur Filter Search lokal
   const filteredReviews = reviews.filter(review => 
     review.book?.title?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Format tanggal (contoh: "2026-07-02T09:19:11.699Z" -> "2 July 2026, 09:19")
   const formatDate = (dateString: string) => {
     if (!dateString) return "Unknown Date";
     const date = new Date(dateString);
@@ -91,7 +85,6 @@ export function ReviewsTab() {
         />
       </div>
 
-      {/* Review List */}
       <div className="flex flex-col gap-[16px] w-full mt-2">
         {loading ? (
           <div className="w-full text-center py-10 font-bold text-[#1C65DA] animate-pulse">
@@ -101,14 +94,11 @@ export function ReviewsTab() {
           filteredReviews.map((review) => (
             <div key={review.id} className="flex flex-col p-[16px] md:p-[20px] gap-[16px] w-full bg-white shadow-[0px_0px_20px_rgba(203,202,202,0.25)] rounded-[16px] hover:scale-[1.01] transition-transform">
               
-              {/* Tanggal */}
               <div className="font-semibold text-[14px] md:text-[16px] text-[#0A0D12]">
                 {formatDate(review.createdAt)}
               </div>
               
               <div className="w-full border-t border-[#D5D7DA]"></div>
-              
-              {/* Info Buku */}
               <div className="flex flex-row items-center gap-[12px] md:gap-[16px] w-full">
                 <img 
                   src={review.book?.coverImage || "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=200"} 
@@ -131,8 +121,6 @@ export function ReviewsTab() {
               </div>
 
               <div className="w-full border-t border-[#D5D7DA]"></div>
-              
-              {/* Bintang & Komentar */}
               <div className="flex flex-col items-start gap-[8px] w-full">
                 <div className="flex flex-row items-center gap-[2px]">
                   {[1, 2, 3, 4, 5].map((starNum) => (
@@ -146,7 +134,6 @@ export function ReviewsTab() {
                     />
                   ))}
                 </div>
-                {/* Handle komentar null */}
                 <p className={`font-semibold text-[14px] md:text-[16px] leading-[28px] ${review.comment ? 'text-[#0A0D12]' : 'text-[#A4A7AE] italic'}`}>
                   {review.comment ? review.comment : "Tidak ada teks ulasan."}
                 </p>

@@ -21,21 +21,18 @@ export function BorrowedListTab() {
   const [loans, setLoans] = useState<Loan[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-
-  // State untuk Modal Review
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [selectedBookId, setSelectedBookId] = useState<number | null>(null);
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch Data Pinjaman dari API
+
   useEffect(() => {
     const fetchLoans = async () => {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
-        // 🚀 URL SUDAH DIPERBAIKI (TIDAK DOUBLE LAGI)
         const response = await fetch(
           "https://library-backend-production-b9cf.up.railway.app/api/me/loans?page=1&limit=50",
           {
@@ -59,11 +56,9 @@ export function BorrowedListTab() {
         setLoading(false);
       }
     };
-
     fetchLoans();
   }, []);
 
-  // Handler Submit Review ke API
   const handleSubmitReview = async () => {
     if (rating === 0) {
       toast.error("Silakan berikan rating minimal 1 bintang!");
@@ -73,7 +68,6 @@ export function BorrowedListTab() {
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem("token");
-      // 🚀 URL SUDAH DIPERBAIKI (TIDAK DOUBLE LAGI)
       const response = await fetch(
         "https://library-backend-production-b9cf.up.railway.app/api/reviews",
         {
@@ -107,7 +101,6 @@ export function BorrowedListTab() {
     }
   };
 
-  // Buka Modal Review
   const openReviewModal = (bookId: number) => {
     setSelectedBookId(bookId);
     setRating(0);
@@ -115,7 +108,6 @@ export function BorrowedListTab() {
     setIsReviewModalOpen(true);
   };
 
-  // Filter Data (Hanya berdasarkan Search Input)
   const filteredLoans = loans.filter((loan) => {
     return loan.book?.title?.toLowerCase().includes(searchQuery.toLowerCase());
   });
@@ -155,7 +147,6 @@ export function BorrowedListTab() {
         />
       </div>
 
-      {/* Card List - Langsung Tampil Tanpa Button Filter */}
       <div className="flex flex-col gap-[16px] w-full mt-2">
         {loading ? (
           <div className="w-full text-center py-10 font-bold text-[#1C65DA] animate-pulse">
@@ -167,7 +158,6 @@ export function BorrowedListTab() {
               key={loan.id}
               className="flex flex-col p-[16px] md:p-[20px] gap-[16px] md:gap-[20px] w-full bg-white shadow-[0px_0px_20px_rgba(203,202,202,0.25)] rounded-[16px]"
             >
-              {/* Header Status & Due Date */}
               <div className="flex flex-row items-center justify-between w-full">
                 <div className="flex items-center gap-[8px] md:gap-[12px]">
                   <span className="font-bold text-[14px] md:text-[16px] text-[#0A0D12]">
@@ -211,8 +201,6 @@ export function BorrowedListTab() {
               </div>
 
               <div className="w-full border-t border-[#D5D7DA]"></div>
-
-              {/* Book Info */}
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-[16px]">
                 <div className="flex flex-row items-center gap-[16px] flex-1">
                   <img
@@ -248,7 +236,6 @@ export function BorrowedListTab() {
                   </div>
                 </div>
 
-                {/* Action Buttons Dinamis */}
                 <div className="flex flex-row gap-[8px] w-full md:w-auto mt-[8px] md:mt-0">
                   {loan.status === "RETURNED" ? (
                     <button
@@ -273,9 +260,6 @@ export function BorrowedListTab() {
         )}
       </div>
 
-      {/* ==========================================
-          MODAL OVERLAY: GIVE REVIEW
-          ========================================== */}
       {isReviewModalOpen && (
         <div className="fixed inset-0 bg-[#0A0D12]/50 z-[100] flex items-center justify-center p-[16px] font-['Quicksand'] animate-in fade-in duration-200">
           <div className="flex flex-col items-center p-[16px] md:p-[24px] gap-[24px] w-full max-w-[345px] md:max-w-[439px] bg-white rounded-[16px] shadow-2xl animate-in zoom-in-95 duration-300">
@@ -316,7 +300,6 @@ export function BorrowedListTab() {
               placeholder="Please share your thoughts about this book"
               className="w-full h-[235px] border border-[#D5D7DA] rounded-[12px] p-[12px] font-medium text-[14px] md:text-[16px] text-[#0A0D12] outline-none focus:border-[#1C65DA] resize-none"
             />
-
             <button
               onClick={handleSubmitReview}
               disabled={isSubmitting}

@@ -1,4 +1,3 @@
-// src/features/authSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { User } from '@/types';
 
@@ -9,7 +8,6 @@ interface AuthState {
   isLoading: boolean;
 }
 
-// Fungsi aman untuk mengambil data user dari localStorage
 const getUserFromStorage = (): User | null => {
   try {
     const userStr = localStorage.getItem('user');
@@ -35,8 +33,6 @@ const authSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
       state.isAuthenticated = true;
-      
-      // Simpan token DAN user ke localStorage
       localStorage.setItem('token', action.payload.token);
       localStorage.setItem('user', JSON.stringify(action.payload.user));
     },
@@ -44,8 +40,6 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
-      
-      //  Hapus token DAN user dari localStorage saat logout
       localStorage.removeItem('token');
       localStorage.removeItem('user');
     },

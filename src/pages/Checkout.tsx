@@ -18,8 +18,6 @@ export default function Checkout() {
   const [duration, setDuration] = useState<number>(3); 
   const [agree1, setAgree1] = useState(false);
   const [agree2, setAgree2] = useState(false);
-
-  // Kalkulasi Tanggal Kembali Otomatis
   const returnDateString = useMemo(() => {
     const date = new Date();
     date.setDate(date.getDate() + duration);
@@ -52,7 +50,6 @@ export default function Checkout() {
 
         <div className="flex flex-col lg:flex-row gap-[40px] lg:gap-[58px] items-start w-full">
           
-          {/* Kolom Kiri: Info User & List Buku */}
           <div className="flex-1 w-full flex flex-col gap-[32px]">
             <div className="flex flex-col gap-[16px] w-full border-b border-[#D5D7DA] pb-[24px]">
               <h2 className="font-bold text-[18px] md:text-[24px] text-[#0A0D12]">User Information</h2>
@@ -95,13 +92,11 @@ export default function Checkout() {
             </div>
           </div>
 
-          {/* Kolom Kanan: Borrow Request Form */}
           <div className="w-full lg:w-[478px] flex flex-col items-start p-[20px] md:p-[24px] gap-[24px] bg-[#FFFFFF] shadow-[0px_0px_20px_rgba(203,202,202,0.25)] rounded-[20px]">
             <h2 className="font-bold text-[20px] md:text-[28px] leading-[34px] md:leading-[38px] text-[#0A0D12]">
               Complete Your Borrow Request
             </h2>
 
-            {/* Input Kalender (Read-Only) */}
             <div className="flex flex-col gap-[8px] w-full">
                <label className="font-bold text-[14px] text-[#0A0D12]">Return Date Plan</label>
                <div className="flex flex-row items-center justify-between px-[16px] py-[8px] w-full h-[48px] bg-[#F5F5F5] border border-[#D5D7DA] rounded-[12px] cursor-not-allowed opacity-90" title="Tanggal dihitung otomatis berdasarkan durasi pinjam">
@@ -112,7 +107,6 @@ export default function Checkout() {
               </div>
             </div>
 
-            {/* Input Durasi */}
             <div className="flex flex-col gap-[12px] w-full mt-2">
               <label className="font-bold text-[14px] md:text-[16px] text-[#0A0D12]">Borrow Duration</label>
               <div className="flex flex-col gap-[12px]">
@@ -131,7 +125,6 @@ export default function Checkout() {
               </div>
             </div>
 
-            {/* Return Date Info Box */}
             <div className="flex flex-col p-[12px] md:p-[16px] bg-[#F6F9FE] rounded-[12px] w-full">
               <span className="font-bold text-[14px] md:text-[16px] text-[#0A0D12]">Return Date</span>
               <span className="font-medium text-[14px] md:text-[16px] text-[#0A0D12] leading-[28px]">
@@ -140,7 +133,6 @@ export default function Checkout() {
               </span>
             </div>
 
-            {/* Agreements */}
             <div className="flex flex-col gap-[12px] w-full">
               <label 
                 onClick={() => setAgree1(!agree1)}
@@ -163,7 +155,6 @@ export default function Checkout() {
               </label>
             </div>
 
-            {/* Submit Button */}
             <button 
               onClick={handleBorrow} 
               disabled={!agree1 || !agree2}

@@ -23,14 +23,12 @@ export function DesktopNavbarAfterLogin() {
   const cartCount = cartItems.length; 
   const [searchQuery, setSearchQuery] = useState("");
 
-  // FITUR LIVE SEARCH DENGAN DEBOUNCE
+
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       if (searchQuery.trim() !== "") {
-        // Otomatis navigasi ke /books saat mengetik, replace: true agar history back tidak menumpuk
         navigate(`/books?q=${encodeURIComponent(searchQuery.trim())}`, { replace: true });
       } else if (searchQuery === "" && location.pathname === '/books') {
-        // Jika input dikosongkan dan user sedang di halaman books, tampilkan semua buku
         navigate(`/books`, { replace: true });
       }
     }, 500); 
@@ -49,7 +47,6 @@ export function DesktopNavbarAfterLogin() {
     <div className="flex h-[80px] items-center justify-center bg-white shadow-[0px_0px_20px_rgba(203,202,202,0.25)]">
       <div className="flex w-full max-w-[1440px] items-center justify-between px-6 lg:px-[120px]">
           <Logo size="lg" />
-        {/* Search Bar - Live Search Active */}
         <div className="hidden md:flex items-center w-[500px] h-11 px-5 border border-[#D5D7DA] rounded-full focus-within:ring-2 focus-within:ring-[#1C65DA] transition-all">
           <Search className="w-5 h-5 text-[#535862] mr-3" />
           <input 
@@ -62,7 +59,6 @@ export function DesktopNavbarAfterLogin() {
         </div>
 
         <div className="flex items-center gap-6">
-          {/* Bag */}
           <Link to="/cart" className="relative text-[#0A0D12] hover:text-[#1C65DA] transition-colors">
             <ShoppingBag className="w-[32px] h-[32px]" />
             {cartCount > 0 && (
@@ -72,7 +68,6 @@ export function DesktopNavbarAfterLogin() {
             )}
           </Link>
 
-          {/* User Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-[16px] px-2 py-1 rounded-lg outline-none hover:bg-gray-50 focus:bg-gray-50 transition-colors w-[184px]">

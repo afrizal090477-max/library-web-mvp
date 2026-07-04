@@ -1,5 +1,3 @@
-// src/lib/api.ts
-
 import {
   Book,
   BookDetail,
@@ -10,7 +8,6 @@ import {
   Review,
 } from "@/types";
 
-// 🛡️ MENGGUNAKAN RELATIVE URL (PROXY) AGAR AMAN DARI CORS DI LOKAL & VERCEL
 const BASE_URL = "/api";
 
 const handleResponse = async <T>(res: Response): Promise<T> => {
@@ -108,10 +105,6 @@ export const getMe = async (token: string) => {
   return handleResponse(res);
 };
 
-// =========================================================
-// TAMBAHAN BARU UNTUK HALAMAN PROFILE & BORROWED LIST
-// =========================================================
-
 export const getBorrowedBooks = async (
   token?: string,
 ): Promise<BorrowedBook[]> => {
@@ -123,30 +116,22 @@ export const getBorrowedBooks = async (
       ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
     },
   });
-
   const result = await handleResponse<ApiResponse<BorrowedBook[]>>(res);
   return result.data || [];
 };
 
 export const getUserReviews = async (token?: string): Promise<Review[]> => {
   const authToken = token || localStorage.getItem("token");
-
   const res = await fetch(`${BASE_URL}/reviews/me`, {
     headers: {
       "Content-Type": "application/json",
       ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
     },
   });
-
   const result = await handleResponse<ApiResponse<Review[]>>(res);
   return result.data || [];
 };
 
-// =========================================================
-// TAMBAHAN BARU UNTUK HALAMAN ADMIN
-// =========================================================
-
-// Cetakan untuk data buku terlaris dari backend
 export interface TopBorrowedBook {
   id: number;
   title: string;
@@ -164,7 +149,6 @@ export interface TopBorrowedBook {
   };
 }
 
-// Cetakan tipe data SESUAI DENGAN API BACKEND HENRY
 export interface AdminOverviewData {
   totals: {
     users: number;
@@ -174,20 +158,18 @@ export interface AdminOverviewData {
     active: number;
     overdue: number;
   };
-  topBorrowed: TopBorrowedBook[]; // 👈 'any' udah kita ganti jadi tipe yang jelas!
+  topBorrowed: TopBorrowedBook[]; 
   generatedAt: string;
 }
 
 export const getAdminOverview = async (token?: string): Promise<AdminOverviewData> => {
   const authToken = token || localStorage.getItem("token");
-
   const res = await fetch(`${BASE_URL}/admin/overview`, {
     headers: {
       "Content-Type": "application/json",
       ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
     },
   });
-
   const result = await handleResponse<ApiResponse<AdminOverviewData>>(res);
   return result.data;
 };

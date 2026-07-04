@@ -1,8 +1,6 @@
 // src/pages/Profile.tsx
 import { useState } from 'react';
 import { useAppSelector } from '@/hooks/useAppSelector';
-
-// IMPORT 2 KOMPONEN TAB DARI FOLDER FEATURES
 import { BorrowedListTab } from '@/features/profile/BorrowedListTab';
 import { ReviewsTab } from '@/features/profile/ReviewsTab';
 
@@ -18,8 +16,6 @@ export default function Profile() {
     <div className="w-full min-h-screen bg-[#FFFFFF] pt-[24px] md:pt-[40px] pb-[80px] font-['Quicksand']">
       
       <div className="mx-auto w-full max-w-[1440px] px-[16px] md:px-[220px] flex flex-col gap-[24px]">
-        
-        {/* TABS NAVIGATION */}
         <div className="flex flex-row items-center p-[8px] gap-[8px] w-full max-w-[557px] h-[56px] bg-[#F5F5F5] rounded-[16px]">
           <button 
             onClick={() => setActiveTab('profile')}
@@ -54,10 +50,6 @@ export default function Profile() {
             Reviews
           </button>
         </div>
-
-        {/* ==========================================
-            KONTEN BERDASARKAN TAB YANG AKTIF
-            ========================================== */}
             
         {activeTab === 'profile' && (
           <div className="flex flex-col items-start gap-[24px] w-full max-w-[557px] animate-in fade-in duration-300">
@@ -65,10 +57,7 @@ export default function Profile() {
               Profile
             </h1>
 
-            {/* Profile Card */}
             <div className="flex flex-col items-start p-[16px] md:p-[20px] gap-[24px] w-full bg-[#FFFFFF] shadow-[0px_0px_20px_rgba(203,202,202,0.25)] rounded-[16px]">
-              
-              {/* Info Container */}
               <div className="flex flex-col items-start gap-[12px] w-full">
                 <img 
                   src={userAvatar} 
@@ -104,7 +93,6 @@ export default function Profile() {
                 </div>
               </div>
 
-              {/* Button Update */}
               <button className="flex flex-row justify-center items-center p-[8px] gap-[8px] w-full h-[44px] bg-[#1C65DA] hover:bg-blue-700 transition-colors rounded-[100px] outline-none">
                 <span className="font-bold text-[16px] leading-[30px] tracking-[-0.02em] text-[#FDFDFD]">
                   Update Profile
@@ -115,7 +103,6 @@ export default function Profile() {
           </div>
         )}
 
-        {/* PANGGIL KOMPONEN TAB DI SINI */}
         {activeTab === 'borrowed' && (
           <div className="w-full">
             <BorrowedListTab />

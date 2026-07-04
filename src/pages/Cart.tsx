@@ -6,18 +6,15 @@ import { useAppSelector } from "@/hooks/useAppSelector";
 export default function Cart() {
   const navigate = useNavigate();
   const cartItems = useAppSelector((state) => state.cart?.items || []);
-
-  // State untuk menyimpan ID buku yang dicentang
   const [selectedIds, setSelectedIds] = useState<Array<string | number>>([]);
-
   const isAllSelected =
     cartItems.length > 0 && selectedIds.length === cartItems.length;
 
   const handleSelectAll = () => {
     if (isAllSelected) {
-      setSelectedIds([]); // Uncheck semua
+      setSelectedIds([]); 
     } else {
-      setSelectedIds(cartItems.map((item) => item.id)); // Check semua
+      setSelectedIds(cartItems.map((item) => item.id)); 
     }
   };
 
@@ -31,20 +28,17 @@ export default function Cart() {
 
   const handleProceedToCheckout = () => {
     if (selectedIds.length === 0) return;
-    // Bawa data ID buku yang dicentang ke halaman checkout
     navigate("/checkout", { state: { selectedIds } });
   };
 
   return (
     <div className="w-full min-h-screen pt-[100px] md:pt-[128px] pb-[120px] bg-[#FFFFFF] font-['Quicksand'] relative">
       <div className="mx-auto w-full max-w-[1440px] px-[16px] md:px-[120px] flex flex-col gap-[24px]">
-        {/* Header Title */}
         <h1 className="font-bold text-[24px] md:text-[36px] text-[#0A0D12]">
           My Cart
         </h1>
 
         {cartItems.length === 0 ? (
-          // EMPTY STATE
           <div className="w-full flex flex-col items-center justify-center py-[80px] bg-white rounded-[16px] gap-4">
             <BookOpen className="w-[80px] h-[80px] text-[#D5D7DA]" />
             <h2 className="font-bold text-[20px] text-[#0A0D12]">
@@ -59,10 +53,7 @@ export default function Cart() {
           </div>
         ) : (
           <div className="flex flex-col lg:flex-row gap-[40px] items-start w-full">
-            {/* List Cart Area */}
             <div className="flex-1 w-full flex flex-col gap-[24px]">
-              
-              {/* Select All */}
               <label
                 onClick={handleSelectAll}
                 className="flex flex-row items-center gap-[16px] cursor-pointer w-fit group"
@@ -82,7 +73,6 @@ export default function Cart() {
                 </span>
               </label>
 
-              {/* Items */}
               <div className="flex flex-col w-full gap-[16px]">
                 {cartItems.map((item) => {
                   const isSelected = selectedIds.includes(item.id);
@@ -91,7 +81,6 @@ export default function Cart() {
                       key={item.id}
                       className="flex flex-row items-center gap-[16px] w-full border-b border-[#D5D7DA] pb-[16px]"
                     >
-                      {/* Checkbox */}
                       <label className="p-2 -ml-2 cursor-pointer">
                         <input
                           type="checkbox"
@@ -111,7 +100,6 @@ export default function Cart() {
                         </div>
                       </label>
 
-                      {/* Cover */}
                       <div className="w-[70px] h-[106px] md:w-[92px] md:h-[138px] bg-gray-200 rounded-[8px] overflow-hidden flex-shrink-0">
                         <img
                           src={
@@ -123,7 +111,6 @@ export default function Cart() {
                         />
                       </div>
 
-                      {/* Info */}
                       <div className="flex flex-col items-start gap-[4px] flex-1">
                         <div className="px-[8px] py-[2px] border border-[#D5D7DA] rounded-[6px]">
                           <span className="font-bold text-[14px] leading-[28px] tracking-[-0.02em] text-[#0A0D12]">
@@ -143,7 +130,6 @@ export default function Cart() {
               </div>
             </div>
 
-            {/* Summary Sidebar (Desktop) */}
             <div className="hidden lg:flex flex-col items-start p-[20px] gap-[24px] w-[318px] bg-[#FFFFFF] shadow-[0px_0px_20px_rgba(203,202,202,0.25)] rounded-[16px] sticky top-[120px]">
               <h2 className="font-bold text-[20px] leading-[34px] tracking-[-0.02em] text-[#0A0D12]">
                 Loan Summary
@@ -170,7 +156,6 @@ export default function Cart() {
         )}
       </div>
 
-      {/* Floating Summary Bottom Bar (Mobile) */}
       {cartItems.length > 0 && (
         <div className="lg:hidden fixed bottom-0 left-0 right-0 w-full bg-[#FFFFFF] shadow-[0px_-4px_20px_rgba(203,202,202,0.15)] px-[16px] py-[16px] flex flex-row justify-between items-center z-50">
           <div className="flex flex-col items-start">

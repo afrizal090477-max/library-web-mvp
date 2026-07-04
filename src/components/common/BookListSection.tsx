@@ -26,13 +26,11 @@ export const BookListSection = ({ selectedCategory, searchQuery }: BookListSecti
     queryKey: ["books", selectedCategory, searchQuery],
     queryFn: async () => {
       const params = new URLSearchParams();
-      
       if (selectedCategory) params.append("category", selectedCategory);
       if (searchQuery) params.append("search", searchQuery); 
 
       const queryString = params.toString();
       const url = `https://library-backend-production-b9cf.up.railway.app/api/books${queryString ? `?${queryString}` : ""}`;
-
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error("Network response was not ok");
@@ -50,7 +48,6 @@ export const BookListSection = ({ selectedCategory, searchQuery }: BookListSecti
       </div>
     );
   }
-
   if (isError) {
     return (
       <div className="w-full flex justify-center py-10 text-[#EE1D52] font-['Quicksand']">
@@ -58,7 +55,6 @@ export const BookListSection = ({ selectedCategory, searchQuery }: BookListSecti
       </div>
     );
   }
-
   const books = data?.data?.books || [];
 
   return (

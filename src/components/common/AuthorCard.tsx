@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Book } from "lucide-react";
-import { Link } from "react-router-dom"; // <-- Tambahkan import Link
+import { Link } from "react-router-dom"; 
 
 export interface Author {
   id: string | number;
@@ -15,7 +15,7 @@ interface AuthorCardProps {
 
 export const AuthorCard = ({ author }: AuthorCardProps) => {
   const [imageError, setImageError] = useState(false);
-  const bookCount = author.totalBooks ?? 0; // Default ke 0 jika tidak ada data
+  const bookCount = author.totalBooks ?? 0; 
 
   const getInitials = (name: string) => {
     const words = name.trim().split(" ");
@@ -26,13 +26,10 @@ export const AuthorCard = ({ author }: AuthorCardProps) => {
   };
 
   return (
-    // UBAH <div> ROOT MENJADI <Link> AGAR BISA DIKLIK KESELURUHANNYA
     <Link 
       to={`/authors/${author.id}`}
       className="flex flex-row items-center p-[12px] md:p-[16px] gap-[12px] md:gap-[16px] w-full h-[84px] md:h-[113px] bg-[#FFFFFF] shadow-[0px_0px_20px_rgba(203,202,202,0.25)] rounded-[12px] md:rounded-[16px] transition-all hover:scale-[1.02] hover:bg-gray-50 cursor-pointer box-border"
     >
-      
-      {/* Container Foto / Inisial */}
       <div className="w-[60px] h-[60px] md:w-[81px] md:h-[81px] bg-[#E0ECFF] rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center">
         {author.profileImage && !imageError ? (
           <img
@@ -49,18 +46,12 @@ export const AuthorCard = ({ author }: AuthorCardProps) => {
         )}
       </div>
 
-      {/* Info Teks Container */}
       <div className="flex flex-col items-start justify-center gap-[2px] flex-1 min-w-0 h-[60px] md:h-[64px]">
-        
-        {/* Nama Author */}
         <h3 className="w-full font-['Quicksand'] font-bold text-[16px] leading-[30px] tracking-[-0.02em] md:text-[18px] md:leading-[32px] md:tracking-[-0.03em] text-[#181D27] truncate block">
           {author.name}
         </h3>
         
-        {/* Bagian Buku (Ikon + Jumlah) */}
         <div className="flex flex-row items-center gap-[6px] w-full h-[28px] md:h-[30px]">
-          
-          {/* Kotak Biru dengan Ikon Buku Putih (Sesuai Figma) */}
           <div className="w-[20px] h-[20px] md:w-[24px] md:h-[24px] bg-[#1C65DA] rounded flex items-center justify-center flex-shrink-0">
             <Book className="w-[12px] h-[12px] md:w-[14px] md:h-[14px] text-white" strokeWidth={2.5} />
           </div>

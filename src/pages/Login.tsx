@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { setCredentials } from "@/features/auth/authSlice";
 import { login } from "@/lib/api";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,8 +37,6 @@ export default function Login() {
       const { user, token } = await login(email, password);
       dispatch(setCredentials({ user, token }));
       toast.success("Login berhasil! Selamat datang kembali.");
-      
-      // 🚦 JALUR LALU LINTAS ROLE ADMIN vs MEMBER
       if (user.role === 'admin') {
         navigate("/admin/dashboard");
       } else {
@@ -60,7 +57,6 @@ export default function Login() {
   return (
     <div className="flex items-center justify-center min-h-screen p-4 bg-white">
       <div className="w-full max-w-[400px]">
-        {/* Logo + Booky */}
         <div className="mb-8 flex items-center gap-[11.79px]">
           <div className="flex h-[33px] w-[33px] items-center justify-center rounded-[6px] border border-[#D5D7DA] bg-white p-1 shadow-sm">
             <img
@@ -86,7 +82,6 @@ export default function Login() {
 
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Email */}
               <div className="space-y-1.5">
                 <Label
                   htmlFor="email"
@@ -105,7 +100,6 @@ export default function Login() {
                   disabled={isLoading}
                 />
               </div>
-              {/* Password */}
               <div className="space-y-1.5">
                 <Label
                   htmlFor="password"

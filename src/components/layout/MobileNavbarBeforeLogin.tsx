@@ -1,20 +1,15 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
-// HAPUS IMPORT SHEET DARI SHADCN
 import { Logo } from '@/components/common/Logo';
 import { Search, ShoppingBag, Menu, X } from 'lucide-react';
 import { MobileMenu } from './MobileMenu';
 
 export function MobileNavbarBeforeLogin() {
-  const cartCount = 0; // Bisa dihubungkan dengan state Redux nanti
+  const cartCount = 0; 
   const navigate = useNavigate();
-  
-  // State untuk mode Navbar
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  
-  // STATE BARU: Untuk buka/tutup menu hamburger (dropdown)
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -33,11 +28,7 @@ export function MobileNavbarBeforeLogin() {
 
   return (
     <div className="flex h-[64px] items-center justify-between bg-white px-[16px] shadow-[0px_0px_20px_rgba(203,202,202,0.25)] relative z-40 font-['Quicksand']">
-      
       {!isSearchOpen ? (
-        // ==========================================
-        // MODE 1: NAVBAR NORMAL
-        // ==========================================
         <>
           <Logo size="md" withText={false} />
 
@@ -58,7 +49,6 @@ export function MobileNavbarBeforeLogin() {
               )}
             </Link>
 
-            {/* TOMBOL HAMBURGER BIASA (Tanpa Sheet) */}
             <button 
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="text-[#0A0D12] hover:text-[#1C65DA] transition-colors outline-none"
@@ -72,11 +62,8 @@ export function MobileNavbarBeforeLogin() {
           </div>
         </>
       ) : (
-        // ==========================================
-        // MODE 2: SEARCH MODE
-        // ==========================================
+
         <div className="flex w-full items-center gap-[16px] animate-in fade-in zoom-in-95 duration-200">
-          
           <div className="w-[40px] h-[40px] flex-shrink-0">
             <Logo size="sm" withText={false} />
           </div>
@@ -107,8 +94,6 @@ export function MobileNavbarBeforeLogin() {
 
         </div>
       )}
-
-      {/* RENDER MOBILE MENU (DROPDOWN) JIKA isMenuOpen === true */}
       {isMenuOpen && !isSearchOpen && (
         <MobileMenu onClose={() => setIsMenuOpen(false)} />
       )}

@@ -14,7 +14,6 @@ const loanSlice = createSlice({
   initialState,
   reducers: {
     addLoanItem: (state, action: PayloadAction<Book>) => {
-      // Pastikan tidak ada duplikasi buku
       if (!state.items.find((item) => item.id === action.payload.id)) {
         state.items.push(action.payload);
       }

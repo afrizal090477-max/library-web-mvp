@@ -31,8 +31,6 @@ interface CategorySectionProps {
 export const CategorySection = ({ activeCategory, onSelectCategory }: CategorySectionProps) => {
   return (
     <div className="w-full max-w-[361px] md:max-w-[1200px] font-['Quicksand'] select-none mx-auto">
-      
-      {/* Desktop View */}
       <div className="hidden md:flex flex-row items-center gap-[16px] w-full h-[130px]">
         {CATEGORIES_DATA.map((category) => (
           <CategoryCard 
@@ -45,9 +43,7 @@ export const CategorySection = ({ activeCategory, onSelectCategory }: CategorySe
         ))}
       </div>
 
-      {/* Mobile View */}
       <div className="flex flex-col w-full gap-[12px] mx-auto md:hidden">
-        {/* Baris Pertama */}
         <div className="flex flex-row items-start gap-[12px] w-full">
           {CATEGORIES_DATA.slice(0, 3).map((category) => (
             <CategoryCard 
@@ -61,7 +57,6 @@ export const CategorySection = ({ activeCategory, onSelectCategory }: CategorySe
           ))}
         </div>
 
-        {/* Baris Kedua */}
         <div className="flex flex-row items-start gap-[12px] w-full">
           {CATEGORIES_DATA.slice(3, 6).map((category) => (
             <CategoryCard 
@@ -98,7 +93,6 @@ const CategoryCard = ({ category, isActive, isDesktop, isRowOne, onClick }: Cate
           : `items-start flex-1 w-full p-[8px] rounded-[16px] ${isRowOne ? "h-[132px]" : "h-[108px]"}`
       } ${isActive ? "ring-2 ring-[#1C65DA]" : ""}`}
     >
-      {/* Container Inner Icon Grafis */}
       <div className={`flex flex-row justify-center items-center bg-[#E0ECFF] flex-shrink-0 mx-auto ${
         isDesktop 
           ? "w-[162.67px] h-[64px] p-[6.4px] rounded-[12px]" 
@@ -111,7 +105,6 @@ const CategoryCard = ({ category, isActive, isDesktop, isRowOne, onClick }: Cate
           loading="eager"
         />
       </div>
-      
       <span className={`font-semibold text-[#0A0D12] tracking-tight ${
         isDesktop 
           ? "w-[162.67px] text-[16px] leading-[30px] truncate mt-[12px] pl-1" 

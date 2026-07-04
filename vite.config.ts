@@ -11,12 +11,24 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // 👇 Cukup tulis "/api" di sini, biar Vite tahu mana yang harus di-proxy
       "/api": {
         target: "https://library-backend-production-b9cf.up.railway.app",
         changeOrigin: true,
         secure: false,
       },
     },
+  },
+
+  build: {
+    chunkSizeWarningLimit: 1000, 
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        }
+      }
+    }
   },
 })
