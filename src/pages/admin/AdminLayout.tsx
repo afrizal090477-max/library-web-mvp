@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate, Navigate } from "react-router-dom"; 
 import { 
   LayoutDashboard as DashIcon, 
   Users as UsersIcon, 
@@ -19,14 +19,18 @@ export default function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  
-  // 📱 State wajib untuk mengontrol buka-tutup sidebar di HP
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const userStr = localStorage.getItem("user");
+  const user = userStr ? JSON.parse(userStr) : null;
+  const isAdmin = user && (user.role === 'admin' || user.role === 'ADMIN'); 
 
   const handleLogout = () => {
     dispatch(logout());
     navigate("/login");
   };
+  if (!isAdmin) {
+    return <Navigate to="/" replace />; 
+  }
 
   const navItems = [
     { name: "Dashboard", path: "/admin/dashboard", icon: DashIcon },
@@ -38,8 +42,6 @@ export default function AdminLayout() {
 
   return (
     <div className="flex min-h-screen bg-[#F9FAFB] overflow-hidden">
-      
-      {/* 🌑 Backdrop Gelap saat Sidebar Mobile aktif */}
       {isSidebarOpen && (
         <div 
           className="fixed inset-0 z-40 bg-black/50 lg:hidden"
@@ -47,11 +49,9 @@ export default function AdminLayout() {
         />
       )}
 
-      {/* ⬅️ SIDEBAR PERBAIKAN: Ditambahkan class transform & absolute untuk mode HP */}
       <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-[#E5E7EB] flex flex-col transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${
         isSidebarOpen ? "translate-x-0" : "-translate-x-full"
       }`}>
-        {/* Logo Area */}
         <div className="h-16 flex items-center justify-between px-6 border-b border-[#E5E7EB] mb-4">
           <Link to="/admin/dashboard" className="flex items-center gap-2 transition-opacity hover:opacity-80">
             <div className="flex h-8 w-8 items-center justify-center rounded border border-[#D5D7DA] bg-white p-1 shadow-sm">
@@ -60,13 +60,11 @@ export default function AdminLayout() {
             <span className="font-quicksand text-xl font-bold text-[#0A0D12]">Booky Admin</span>
           </Link>
           
-          {/* Tombol X untuk menutup sidebar di HP */}
           <button className="lg:hidden text-[#6B7280]" onClick={() => setIsSidebarOpen(false)}>
             <X size={24} />
           </button>
         </div>
 
-        {/* Navigation Links */}
         <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
             const isActive = location.pathname.includes(item.path);
@@ -76,7 +74,7 @@ export default function AdminLayout() {
               <Link
                 key={item.name}
                 to={item.path}
-                onClick={() => setIsSidebarOpen(false)} // Otomatis menutup sidebar setelah klik rute
+                onClick={() => setIsSidebarOpen(false)} 
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm transition-colors ${
                   isActive 
                     ? "bg-[#1C65DA] text-white" 
@@ -90,7 +88,6 @@ export default function AdminLayout() {
           })}
         </nav>
 
-        {/* Logout */}
         <div className="p-4 border-t border-[#E5E7EB]">
           <button
             onClick={handleLogout}
@@ -102,11 +99,8 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      {/* ➡️ AREA KONTEN UTAMA */}
       <main className="flex flex-col flex-1 h-screen overflow-hidden">
-        {/* Header Atas */}
         <header className="h-16 flex-shrink-0 bg-white border-b border-[#E5E7EB] flex items-center justify-between lg:justify-end px-4 sm:px-8">
-          {/* ☰ Tombol Hamburger Baru (Hanya muncul di HP) */}
           <button 
             className="lg:hidden p-2 text-[#4B5563] hover:bg-[#F3F4F6] rounded-lg"
             onClick={() => setIsSidebarOpen(true)}
@@ -115,14 +109,14 @@ export default function AdminLayout() {
           </button>
 
           <div className="flex items-center gap-3">
-            <span className="text-sm font-bold text-[#374151]">Admin Library</span>
-            <div className="w-9 h-9 rounded-full bg-[#E0ECFF] flex items-center justify-center text-[#1C65DA] font-bold">
-              AL
+            <span className="text-sm font-bold text-[#374151]">
+              {user ? user.name : "Admin Library"}
+            </span>
+            <div className="w-9 h-9 rounded-full bg-[#E0ECFF] flex items-center justify-center text-[#1C65DA] font-bold uppercase">
+              {user && user.name ? user.name.substring(0, 2) : "AL"}
             </div>
           </div>
         </header>
-
-        {/* Area Konten Utama */}
         <div className="flex-1 p-4 overflow-auto sm:p-8">
           <Outlet />
         </div>
