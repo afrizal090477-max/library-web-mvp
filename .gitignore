@@ -32,3 +32,6 @@ Thumbs.db
 *.log
 
 vercel/
+
+# TypeScript build info
+*.tsbuildinfo
