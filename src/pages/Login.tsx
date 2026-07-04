@@ -37,7 +37,9 @@ export default function Login() {
       const { user, token } = await login(email, password);
       dispatch(setCredentials({ user, token }));
       toast.success("Login berhasil! Selamat datang kembali.");
-      if (user.role === 'admin') {
+      
+      // 🚀 PERBAIKAN: Cek role dengan huruf kapital 'ADMIN'
+      if (user.role === 'ADMIN') {
         navigate("/admin/dashboard");
       } else {
         navigate("/");

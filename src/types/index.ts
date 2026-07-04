@@ -2,7 +2,8 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  role: 'admin' | 'user'; 
+  // 🚀 PERBAIKAN 1: Tambahin 'ADMIN' di sini!
+  role: 'admin' | 'user' | 'ADMIN'; 
   avatar?: string;
 }
 
@@ -17,15 +18,18 @@ export interface Category {
   name: string;
 }
 
+// 🚀 PERBAIKAN 2: Dua interface Review digabung jadi satu biar nggak bentrok
 export interface Review {
   id: number;
-  userId: number;
-  userName: string;
-  user: { id: number; name: string };
+  userId?: number;
+  userName?: string;
+  user?: { id: number; name: string };
+  bookTitle?: string;
   rating: number;
-  star: number;
+  star?: number;
   comment: string;
-  createdAt: string;
+  createdAt?: string;
+  date?: string;
 }
 
 export interface Book {
@@ -73,12 +77,4 @@ export interface BorrowedBook {
   duration: string;
   dueDate: string;
   status: "Active" | "Returned" | "Overdue" | string;
-}
-
-export interface Review {
-  id: number; 
-  bookTitle?: string;
-  date: string;
-  rating: number;
-  comment: string;
 }
