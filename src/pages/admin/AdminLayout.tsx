@@ -8,7 +8,9 @@ import {
   LogOut as LogoutIcon,
   Menu,
   X,
-  UserIcon
+  UserIcon,
+  PenTool,
+  Tags
 } from "lucide-react";
 
 import { useAppDispatch } from "@/hooks/useAppDispatch";
@@ -34,7 +36,9 @@ export default function AdminLayout() {
 
   const navItems = [
     { name: "Dashboard", path: "/admin/dashboard", icon: DashIcon },
+    { name: "Manage Authors", path: "/admin/authors", icon: PenTool },
     { name: "Manage Books", path: "/admin/books", icon: BookIcon },
+    { name: "Manage Categories", path: "/admin/categories", icon: Tags },
     { name: "Manage Users", path: "/admin/users", icon: UsersIcon },
     { name: "Loan Records", path: "/admin/loans", icon: LoanIcon },
     { name: "My Profile", path: "/admin/profile", icon: UserIcon },

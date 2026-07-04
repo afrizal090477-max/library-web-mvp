@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { BASE_URL } from "@/lib/api"; 
 
 export interface AdminUserItem {
   id: number;
@@ -15,16 +16,15 @@ export interface AdminUserItem {
 export function AdminUserList() {
   const navigate = useNavigate();
   const [users, setUsers] = useState<AdminUserItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); 
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        setIsLoading(true);
         const token = localStorage.getItem("token");
-        const res = await fetch("https://library-backend-production-b9cf.up.railway.app/api/admin/users", {
+        const res = await fetch(`${BASE_URL}/admin/users`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -39,7 +39,7 @@ export function AdminUserList() {
         if (err instanceof Error) setError(err.message);
         else setError("Terjadi kesalahan sistem");
       } finally {
-        setIsLoading(false);
+        setIsLoading(false); 
       }
     };
     fetchUsers();

@@ -37,11 +37,11 @@ export function AdminLoanList() {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("Active"); 
   const filters = ["All", "Active", "Returned", "Overdue"];
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
-    const fetchLoans = async () => {
+    const loadData = async () => {
       try {
-        setIsLoading(true);
         const token = localStorage.getItem("token");
         const res = await fetch(`${BASE_URL}/admin/loans?status=all&page=1&limit=20`, {
           headers: {
@@ -62,11 +62,38 @@ export function AdminLoanList() {
         if (err instanceof Error) setError(err.message);
         else setError("Terjadi kesalahan sistem");
       } finally {
-        setIsLoading(false);
+        setIsLoading(false); 
       }
     };
-    fetchLoans();
-  }, []);
+
+    loadData();
+  }, [refreshTrigger]);
+  const handleReturn = async (loanId: number) => {
+    if (!window.confirm("Apakah Anda yakin ingin menyetujui pengembalian buku ini?")) return;
+
+    try {
+      setIsLoading(true); 
+      const token = localStorage.getItem("token");
+      
+      const res = await fetch(`${BASE_URL}/loans/${loanId}/return`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        }
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.message || "Gagal memproses pengembalian buku");
+      }
+      alert("✅ Buku berhasil dikembalikan!");
+      setRefreshTrigger((prev) => prev + 1); 
+    } catch (err) {
+      setIsLoading(false);
+      alert(err instanceof Error ? err.message : "Terjadi kesalahan");
+    }
+  };
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return "-";
@@ -234,13 +261,23 @@ export function AdminLoanList() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-start mt-2 sm:items-end sm:mt-0">
-                    <span className="text-xs sm:text-sm font-medium text-[#535862] font-quicksand mb-1">
-                      Borrower's Name
-                    </span>
-                    <span className="text-sm sm:text-base font-bold text-[#0A0D12] font-quicksand">
-                      {userInfo?.name || "Unknown User"}
-                    </span>
+                  <div className="flex flex-col items-start w-full gap-3 mt-2 sm:items-end sm:mt-0 sm:w-auto">
+                    <div className="flex flex-col items-start w-full sm:items-end">
+                      <span className="text-xs sm:text-sm font-medium text-[#535862] font-quicksand mb-1">
+                        Borrower's Name
+                      </span>
+                      <span className="text-sm sm:text-base font-bold text-[#0A0D12] font-quicksand">
+                        {userInfo?.name || "Unknown User"}
+                      </span>
+                    </div>
+                    {loan.status?.toUpperCase() === "BORROWED" && (
+                      <button
+                        onClick={() => handleReturn(loan.id)}
+                        className="px-4 py-2 bg-[#079455] hover:bg-[#067a44] text-white text-xs sm:text-sm font-bold font-quicksand rounded-lg transition-colors shadow-sm w-full sm:w-auto"
+                      >
+                        Mark as Returned
+                      </button>
+                    )}
                   </div>
 
                 </div>

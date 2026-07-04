@@ -93,7 +93,6 @@ export function AdminProfile() {
 
     try {
       const token = localStorage.getItem("token");
-      // 🚀 PERBAIKAN: Gunakan BASE_URL untuk PATCH update profil
       const res = await fetch(`${BASE_URL}/me`, {
         method: "PATCH",
         headers: { 
@@ -182,7 +181,6 @@ export function AdminProfile() {
           </div>
         </div>
 
-        {/* KANAN: Form Input */}
         <div className="flex flex-col flex-1 w-full gap-5">
           
           <div className="space-y-1">

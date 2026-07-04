@@ -3,7 +3,6 @@ import { MainLayout } from './layouts/MainLayout';
 import AdminLayout from '@/pages/admin/AdminLayout'; 
 import { ProtectedRoute } from '@/routes/ProtectedRoute'; 
 
-// Import Pages
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import Home from '@/pages/Home';
@@ -15,7 +14,6 @@ import Checkout from './pages/Checkout';
 import AuthorDetail from './pages/AuthorDetail';
 import Success from './pages/Success';
 
-// Import Admin Pages
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminUserList } from './pages/admin/AdminUserList';
 import { AdminBookList } from './pages/admin/AdminBookList';
@@ -24,6 +22,8 @@ import { AdminLoanList } from './pages/admin/AdminLoanList';
 import { AdminEditBook } from './pages/admin/AdminEditBook';
 import { AdminPreviewBook } from './pages/admin/AdminPreviewBook';
 import { AdminProfile } from './pages/admin/AdminProfile';
+import { AdminAuthorList } from './pages/admin/AdminAuthorList';
+import { AdminCategoryList } from './pages/admin/AdminCategoryList';
 
 export const router = createBrowserRouter([
   {
@@ -63,6 +63,8 @@ export const router = createBrowserRouter([
           { path: 'books/edit/:id', element: <AdminEditBook /> },
           { path: 'books/:id', element: <AdminPreviewBook /> },
           { path: 'profile', element: <AdminProfile /> },
+          { path: "authors", element: <AdminAuthorList /> },
+          { path: "categories", element: <AdminCategoryList /> },
         ]
       }
     ],
