@@ -8,7 +8,8 @@ import {
   Review,
 } from "@/types";
 
-const BASE_URL = "https://library-backend-production-b9cf.up.railway.app/api";
+// 🚀 INI DIA KATA KUNCINYA: "export" biar bisa dipinjem file lain!
+export const BASE_URL = "https://library-backend-production-b9cf.up.railway.app/api";
 
 const handleResponse = async <T>(res: Response): Promise<T> => {
   const json = await res.json();
@@ -176,11 +177,10 @@ export const getAdminOverview = async (
   return result.data;
 };
 
-
+// 🚀 Fungsi Admin Users yang kita bikin tadi juga udah masuk di sini
 export const getAdminUsers = async (token?: string) => {
   const authToken = token || localStorage.getItem("token");
   
-  // Sesuai dokumentasi Swagger backend Henry: GET /api/admin/users
   const res = await fetch(`${BASE_URL}/admin/users`, {
     headers: {
       "Content-Type": "application/json",

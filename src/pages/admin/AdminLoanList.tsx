@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
+import { BASE_URL } from "@/lib/api"; // 🚀 Import BASE_URL di sini!
 
 export interface LoanItem {
   id: number;
@@ -40,7 +40,9 @@ export function AdminLoanList() {
       try {
         setIsLoading(true);
         const token = localStorage.getItem("token");
-        const res = await fetch("/api/admin/loans", {
+        
+        // 🚀 PERBAIKAN: Tembak langsung ke URL API Production Railway!
+        const res = await fetch(`${BASE_URL}/admin/loans`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,

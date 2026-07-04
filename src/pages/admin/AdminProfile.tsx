@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Camera, Save, X, User } from "lucide-react";
+import { BASE_URL } from "@/lib/api"; // 🚀 Import BASE_URL langsung dari api.ts
 
 export function AdminProfile() {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -21,7 +22,7 @@ export function AdminProfile() {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("/api/me", {
+        const res = await fetch(`${BASE_URL}/me`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -92,7 +93,8 @@ export function AdminProfile() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("/api/me", {
+      // 🚀 PERBAIKAN: Gunakan BASE_URL untuk PATCH update profil
+      const res = await fetch(`${BASE_URL}/me`, {
         method: "PATCH",
         headers: { 
           "Content-Type": "application/json", 
