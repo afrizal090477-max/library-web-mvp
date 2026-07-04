@@ -24,12 +24,13 @@ export function AdminUserList() {
       try {
         setIsLoading(true);
         const token = localStorage.getItem("token");
-        const res = await fetch("/api/admin/users", {
+        const res = await fetch("https://library-backend-production-b9cf.up.railway.app/api/admin/users", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         });
+        
         if (!res.ok) throw new Error("Gagal mengambil data pengguna");
         const json = await res.json();
         const userData = Array.isArray(json.data) ? json.data : json.data?.users || [];
@@ -51,24 +52,19 @@ export function AdminUserList() {
 
   return (
     <div className="max-w-[1200px] mx-auto space-y-6 pb-12">
-      
-      {/* 🚀 TAB NAVIGASI UTAMA (SESUAI FIGMA) */}
       <div className="flex items-center p-2 gap-2 bg-[#F5F5F5] rounded-2xl w-full max-w-[600px] overflow-x-auto hide-scrollbar">
-        {/* Tombol Borrowed List */}
         <button
           onClick={() => navigate("/admin/loans")}
           className="flex-1 min-w-fit whitespace-nowrap py-2 px-3 text-sm sm:text-base rounded-xl transition-all duration-300 font-quicksand text-[#535862] font-medium hover:bg-gray-200"
         >
           Borrowed List
         </button>
-        {/* Tombol User (Ganti class ACTIVE / warna putih sesuai halamannya ya) */}
         <button
           onClick={() => navigate("/admin/users")}
-          className="flex-1 min-w-fit whitespace-nowrap py-2 px-3 text-sm sm:text-base rounded-xl transition-all duration-300 font-quicksand text-[#535862] font-medium hover:bg-gray-200"
+          className="flex-1 min-w-fit whitespace-nowrap py-2 px-3 text-sm sm:text-base rounded-xl transition-all duration-300 font-quicksand text-[#535862] font-medium hover:bg-white shadow-sm"
         >
           User
         </button>
-        {/* Tombol Book List (Ganti class ACTIVE / warna putih sesuai halamannya ya) */}
         <button
           onClick={() => navigate("/admin/books")}
           className="flex-1 min-w-fit whitespace-nowrap py-2 px-3 text-sm sm:text-base rounded-xl transition-all duration-300 font-quicksand text-[#535862] font-medium hover:bg-gray-200"
@@ -77,7 +73,6 @@ export function AdminUserList() {
         </button>
       </div>
 
-      {/* Title & Search */}
       <div className="space-y-4 sm:space-y-6">
         <h1 className="text-2xl sm:text-[28px] font-bold text-[#0A0D12] tracking-[-0.02em] font-quicksand">User</h1>
         <div className="relative w-full max-w-[600px]">
@@ -92,7 +87,6 @@ export function AdminUserList() {
         </div>
       </div>
 
-      {/* Desktop Table View */}
       <div className="hidden md:block bg-white border border-[#D5D7DA] rounded-xl shadow-[0_0_24px_rgba(203,202,202,0.2)] overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -126,7 +120,6 @@ export function AdminUserList() {
         </table>
       </div>
 
-      {/* Mobile Card View */}
       <div className="space-y-4 md:hidden">
         {isLoading ? (
           <div className="p-8 text-center text-[#535862] animate-pulse">Memuat data...</div>
@@ -162,19 +155,15 @@ export function AdminUserList() {
         )}
       </div>
 
-      {/* Pagination Footer (Udah dikembalikan ke posisinya!) */}
       {!isLoading && filteredUsers.length > 0 && (
         <div className="flex flex-col sm:flex-row justify-between items-center pt-6 pb-12 border-t border-[#D5D7DA] gap-4">
-          <p className="text-base font-medium text-[#0A0D12] font-quicksand">Showing 1 to 10 of 97 entries</p>
+          <p className="text-base font-medium text-[#0A0D12] font-quicksand">Showing 1 to {Math.min(10, filteredUsers.length)} of {filteredUsers.length} entries</p>
           <div className="flex items-center gap-2 bg-white sm:gap-4 font-quicksand">
             <button className="flex items-center gap-1.5 text-base font-medium text-[#0A0D12] hover:opacity-70">
               <ChevronLeft size={20} /> Previous
             </button>
             <div className="flex items-center gap-1 sm:gap-2">
               <button className="w-10 h-10 flex items-center justify-center text-base font-medium text-[#0A0D12] border border-[#D5D7DA] rounded-[10px]">1</button>
-              <button className="w-10 h-10 flex items-center justify-center text-base font-medium text-[#0A0D12]">2</button>
-              <button className="w-10 h-10 flex items-center justify-center text-base font-medium text-[#0A0D12]">3</button>
-              <span className="w-10 h-10 flex items-center justify-center text-base font-medium text-[#0A0D12]">...</span>
             </div>
             <button className="flex items-center gap-1.5 text-base font-medium text-[#0A0D12] hover:opacity-70">
               Next <ChevronRight size={20} />

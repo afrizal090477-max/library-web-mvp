@@ -16,7 +16,7 @@ export function AdminProfile() {
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
 
-  // 🚀 FETCH DATA PROFIL DARI API
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -35,7 +35,7 @@ export function AdminProfile() {
         
         setFormData({
           name: user.name || "",
-          email: user.email || "", // Biasanya email gak bisa diganti
+          email: user.email || "", 
           phone: user.phone || "",
           profilePhoto: user.profilePhoto || "",
         });
@@ -54,7 +54,6 @@ export function AdminProfile() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 🚀 KOMPRESI FOTO PROFIL BIAR API HENRY GAK MENGGEGAP
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -68,17 +67,14 @@ export function AdminProfile() {
     reader.onloadend = () => {
       const img = new Image();
       img.src = reader.result as string;
-      
       img.onload = () => {
         const canvas = document.createElement("canvas");
         const MAX_WIDTH = 300; 
         const scaleSize = MAX_WIDTH / img.width;
         canvas.width = MAX_WIDTH;
         canvas.height = img.height * scaleSize;
-
         const ctx = canvas.getContext("2d");
         ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-
         const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
         setFormData({ ...formData, profilePhoto: compressedBase64 });
         setError(null); 
@@ -87,7 +83,7 @@ export function AdminProfile() {
     reader.readAsDataURL(file);
   };
 
-  // 🚀 UPDATE PROFIL KE API
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
@@ -131,8 +127,6 @@ export function AdminProfile() {
 
   return (
     <div className="max-w-[800px] mx-auto space-y-6 pb-12 relative">
-      
-      {/* TOAST SUCCESS */}
       {showToast && (
         <div className="fixed top-[80px] right-4 sm:right-8 z-50 flex items-center p-3 gap-3 w-fit bg-[#079455] rounded-lg shadow-lg animate-in fade-in slide-in-from-top-5">
           <span className="text-sm font-semibold text-white font-quicksand">Profil berhasil diperbarui!</span>
@@ -142,7 +136,6 @@ export function AdminProfile() {
         </div>
       )}
 
-      {/* Title */}
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl sm:text-[28px] font-bold text-[#0A0D12] tracking-[-0.03em] font-quicksand">
           Admin Profile
@@ -159,8 +152,6 @@ export function AdminProfile() {
       )}
 
       <form onSubmit={handleSubmit} className="bg-white border border-[#D5D7DA] rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row gap-8 items-start">
-        
-        {/* KIRI: Foto Profil */}
         <div className="flex flex-col items-center w-full gap-4 sm:w-auto shrink-0">
           <div className="relative cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
             <div className="w-[120px] h-[120px] rounded-full border-4 border-white shadow-md overflow-hidden bg-gray-100 flex items-center justify-center">
@@ -170,7 +161,6 @@ export function AdminProfile() {
                 <User size={48} className="text-[#D5D7DA]" />
               )}
             </div>
-            {/* Overlay Kamera pas di-hover */}
             <div className="absolute inset-0 flex items-center justify-center transition-opacity rounded-full opacity-0 bg-black/40 group-hover:opacity-100">
               <Camera size={28} className="text-white" />
             </div>

@@ -20,10 +20,8 @@ export function AdminAddBook() {
   const [authorSearch, setAuthorSearch] = useState("");
   const [selectedAuthorId, setSelectedAuthorId] = useState<number | null>(null);
   const [showAuthorDropdown, setShowAuthorDropdown] = useState(false);
-
   const [authors, setAuthors] = useState<Author[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
@@ -33,12 +31,10 @@ export function AdminAddBook() {
       try {
         const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
-        
         const [authRes, catRes] = await Promise.all([
           fetch("/api/authors", { headers }),
           fetch("/api/categories", { headers })
         ]);
-        
         if (authRes.ok) {
           const authData = await authRes.json();
           setAuthors(authData.data?.authors || []);
@@ -104,7 +100,6 @@ export function AdminAddBook() {
         const existingAuthor = authors.find(
           a => a.name.toLowerCase() === authorSearch.trim().toLowerCase()
         );
-
         if (existingAuthor) {
           finalAuthorId = existingAuthor.id;
         } else {
@@ -126,14 +121,11 @@ export function AdminAddBook() {
           finalAuthorId = newAuthData.data?.author?.id || newAuthData.data?.id;
         }
       }
-
       if (!finalAuthorId) {
         throw new Error("Sistem gagal mendapatkan ID Author. Coba pilih manual dari dropdown.");
       }
 
-      // 🥷 JALAN NINJA: Generate ISBN Acak 13 Digit (978xxxxxxxxxx)
       const randomIsbn = "978" + Math.floor(1000000000 + Math.random() * 9000000000).toString();
-
       const payload = {
         isbn: randomIsbn, 
         title: formData.title,
@@ -177,8 +169,6 @@ export function AdminAddBook() {
 
   return (
     <div className="max-w-[529px] mx-auto space-y-6 pb-12 relative pt-8 sm:pt-4">
-      
-      {/* TOAST SUCCESS */}
       {showToast && (
         <div className="fixed top-[68px] sm:top-[116px] left-1/2 -translate-x-1/2 w-[345px] sm:w-[291px] h-10 bg-[#079455] rounded-lg flex items-center justify-between px-3 z-50 shadow-lg animate-in fade-in slide-in-from-top-5">
           <span className="text-sm font-semibold text-white font-quicksand tracking-[-0.02em]">Buku berhasil ditambahkan!</span>
@@ -188,7 +178,6 @@ export function AdminAddBook() {
         </div>
       )}
 
-      {/* Header Halaman */}
       <div className="flex items-center w-full gap-3">
         <Link to="/admin/books" className="text-[#1E1E1E] hover:opacity-70 transition-opacity">
           <ArrowLeft size={32} />
@@ -198,17 +187,13 @@ export function AdminAddBook() {
         </h1>
       </div>
 
-      {/* Error Message Lokal */}
       {error && (
         <div className="p-3 text-sm font-bold text-[#EE1D52] bg-[#EE1D52]/10 border border-[#EE1D52]/20 rounded-lg">
           {error}
         </div>
       )}
 
-      {/* Area Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
-        
-        {/* Title */}
         <div className="space-y-0.5">
           <label className="block text-sm font-bold text-[#0A0D12] font-quicksand tracking-[-0.02em]">Title</label>
           <input 
@@ -221,9 +206,6 @@ export function AdminAddBook() {
           />
         </div>
 
-        {/* ❌ KOLOM ISBN DIHAPUS DARI SINI ❌ */}
-
-        {/* Author */}
         <div className="space-y-0.5 relative">
           <label className="block text-sm font-bold text-[#0A0D12] font-quicksand tracking-[-0.02em]">Author</label>
           <input 
@@ -265,7 +247,6 @@ export function AdminAddBook() {
           )}
         </div>
 
-        {/* Category */}
         <div className="space-y-0.5">
           <label className="block text-sm font-bold text-[#0A0D12] font-quicksand tracking-[-0.02em]">Category</label>
           <select 
@@ -282,7 +263,6 @@ export function AdminAddBook() {
           </select>
         </div>
 
-        {/* Number of Pages */}
         <div className="space-y-0.5">
           <label className="block text-sm font-bold text-[#0A0D12] font-quicksand tracking-[-0.02em]">Number of Pages</label>
           <input 
@@ -296,7 +276,6 @@ export function AdminAddBook() {
           />
         </div>
 
-        {/* Description */}
         <div className="space-y-0.5">
           <label className="block text-sm font-bold text-[#0A0D12] font-quicksand tracking-[-0.02em]">Description</label>
           <textarea 
@@ -309,7 +288,6 @@ export function AdminAddBook() {
           ></textarea>
         </div>
 
-        {/* Cover Image Upload */}
         <div className="space-y-0.5">
           <label className="block text-sm font-bold text-[#0A0D12] font-quicksand tracking-[-0.02em]">Cover Image</label>
           <div 
@@ -339,7 +317,6 @@ export function AdminAddBook() {
           </div>
         </div>
 
-        {/* Tombol Save */}
         <div className="pt-2">
           <button 
             type="submit"

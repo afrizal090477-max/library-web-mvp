@@ -18,15 +18,11 @@ export function AdminBookList() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  
   const [activeFilter, setActiveFilter] = useState("All");
   const filters = ["All", "Available", "Borrowed", "Returned", "Damaged"];
-
   const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-
-  // State untuk Modal Delete
   const [bookToDelete, setBookToDelete] = useState<{id: number, title: string} | null>(null);
 
   useEffect(() => {
@@ -106,7 +102,6 @@ export function AdminBookList() {
   return (
     <div className="max-w-[1200px] mx-auto space-y-6 pb-12 relative px-4 sm:px-0">
       
-      {/* TOAST ALERT SUCCESS */}
       {toastMessage && (
         <div className="fixed top-[68px] sm:top-[116px] right-4 sm:right-[120px] z-50 flex flex-row justify-center items-center p-2 px-3 gap-2 w-[345px] sm:w-[291px] h-10 bg-[#079455] rounded-lg shadow-lg animate-in fade-in slide-in-from-top-5">
           <span className="flex-1 text-sm font-semibold text-white font-quicksand tracking-[-0.02em]">
@@ -118,7 +113,6 @@ export function AdminBookList() {
         </div>
       )}
 
-      {/* MODAL DELETE */}
       {bookToDelete && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
           <div 
@@ -153,7 +147,6 @@ export function AdminBookList() {
         </div>
       )}
 
-      {/* TAB NAVIGASI UTAMA */}
       <div className="flex items-center p-2 gap-2 bg-[#F5F5F5] rounded-2xl w-full max-w-[600px] overflow-x-auto hide-scrollbar mt-4 sm:mt-0">
         <button
           onClick={() => navigate("/admin/loans")}
@@ -174,7 +167,6 @@ export function AdminBookList() {
         </button>
       </div>
 
-      {/* Title & Actions */}
       <div className="space-y-4 sm:space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-2xl sm:text-[28px] font-bold text-[#0A0D12] tracking-[-0.03em] font-quicksand">Book List</h1>
@@ -198,7 +190,6 @@ export function AdminBookList() {
         </div>
       </div>
 
-      {/* 🚀 PILLS FILTER BUKU (Dikecilin dikit di mode Mobile biar Returned muat sempurna) */}
       <div className="flex w-full gap-2 pb-2 overflow-x-auto hide-scrollbar">
         {filters.map((filter) => (
           <button
@@ -215,7 +206,6 @@ export function AdminBookList() {
         ))}
       </div>
 
-      {/* Book List Cards */}
       <div className="space-y-4">
         {isLoading ? (
           <div className="p-8 text-center text-[#535862] animate-pulse">Memuat data buku...</div>
@@ -226,15 +216,12 @@ export function AdminBookList() {
         ) : (
           filteredBooks.map((book) => (
             <div key={book.id} className="flex flex-row items-center p-4 sm:p-5 gap-3 sm:gap-4 w-full bg-white shadow-[0_0_20px_rgba(203,202,202,0.25)] border border-[#E5E7EB] rounded-2xl relative">
-              
-              {/* Cover */}
               <img 
                 src={book.coverImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(book.title)}&background=E0ECFF&color=1C65DA`} 
                 alt={book.title} 
                 className="w-20 h-[120px] sm:w-[92px] sm:h-[138px] object-cover rounded-md flex-shrink-0 bg-gray-100"
               />
 
-              {/* Detail Area */}
               <div className="flex flex-col flex-1 min-w-0 gap-1 sm:gap-1.5">
                 <span className="inline-block px-2 py-1 mb-1 border border-[#D5D7DA] rounded-md text-xs sm:text-sm font-bold text-[#0A0D12] font-quicksand w-fit">
                   {book.category?.name || "Uncategorized"}
@@ -254,7 +241,6 @@ export function AdminBookList() {
                 </div>
               </div>
 
-              {/* 📱 TITIK TIGA (MOBILE ACTION) */}
               <div className="relative sm:hidden shrink-0">
                 <button 
                   onClick={() => setOpenDropdownId(openDropdownId === book.id ? null : book.id)}
@@ -298,7 +284,6 @@ export function AdminBookList() {
                 )}
               </div>
 
-              {/* 💻 DESKTOP ACTIONS */}
               <div className="items-center hidden gap-3 sm:flex shrink-0">
                 <button 
                   onClick={() => navigate(`/admin/books/${book.id}`)}

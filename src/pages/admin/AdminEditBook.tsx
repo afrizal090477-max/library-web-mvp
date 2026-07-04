@@ -12,7 +12,7 @@ export function AdminEditBook() {
   
   const [formData, setFormData] = useState({
     title: "",
-    isbn: "", // 👈 Tetep disimpen di State, tapi GAK DITAMPILIN di UI
+    isbn: "", 
     categoryId: "",
     pages: "",
     description: "",
@@ -43,7 +43,6 @@ export function AdminEditBook() {
           fetch("/api/categories", { headers }),
           fetch(`/api/books/${id}`, { headers })
         ]);
-        
         if (authRes.ok) {
           const authData = await authRes.json();
           setAuthors(authData.data?.authors || []);
@@ -64,7 +63,6 @@ export function AdminEditBook() {
             description: book.description || "",
             coverImage: book.coverImage || "",
           });
-
           if (book.author) {
             setAuthorSearch(book.author.name);
             setSelectedAuthorId(book.author.id);
@@ -79,7 +77,6 @@ export function AdminEditBook() {
         setIsFetchingData(false);
       }
     };
-    
     if (id) fetchData();
   }, [id]);
 
@@ -100,17 +97,14 @@ export function AdminEditBook() {
     reader.onloadend = () => {
       const img = new Image();
       img.src = reader.result as string;
-      
       img.onload = () => {
         const canvas = document.createElement("canvas");
         const MAX_WIDTH = 400; 
         const scaleSize = MAX_WIDTH / img.width;
         canvas.width = MAX_WIDTH;
         canvas.height = img.height * scaleSize;
-
         const ctx = canvas.getContext("2d");
         ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
-
         const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
         setFormData({ ...formData, coverImage: compressedBase64 });
         setError(null); 
@@ -161,7 +155,7 @@ export function AdminEditBook() {
       if (!finalAuthorId) throw new Error("Sistem gagal mendapatkan ID Author.");
 
       const payload = {
-        isbn: formData.isbn, // 👈 Tinggal dikirim balik dari state, aman!
+        isbn: formData.isbn, 
         title: formData.title,
         authorId: finalAuthorId,
         categoryId: Number(formData.categoryId),
@@ -204,7 +198,6 @@ export function AdminEditBook() {
   return (
     <div className="max-w-[529px] mx-auto space-y-6 pb-12 relative pt-8 sm:pt-4">
       
-      {/* TOAST SUCCESS EDIT */}
       {showToast && (
         <div className="fixed top-[68px] sm:top-[116px] left-1/2 -translate-x-1/2 w-[345px] sm:w-[291px] h-10 bg-[#079455] rounded-lg flex items-center justify-between px-3 z-50 shadow-lg animate-in fade-in slide-in-from-top-5">
           <span className="text-sm font-semibold text-white font-quicksand tracking-[-0.02em]">Buku berhasil diupdate!</span>
@@ -214,7 +207,6 @@ export function AdminEditBook() {
         </div>
       )}
 
-      {/* Header */}
       <div className="flex items-center w-full gap-3">
         <Link to="/admin/books" className="text-[#1E1E1E] hover:opacity-70 transition-opacity">
           <ArrowLeft size={32} />
@@ -232,7 +224,6 @@ export function AdminEditBook() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         
-        {/* Title */}
         <div className="space-y-0.5">
           <label className="block text-sm font-bold text-[#0A0D12] font-quicksand tracking-[-0.02em]">Title</label>
           <input 
@@ -245,9 +236,6 @@ export function AdminEditBook() {
           />
         </div>
 
-        {/* ❌ BLOK INPUT ISBN UDAH DILENYAPKAN DARI SINI ❌ */}
-
-        {/* Author */}
         <div className="space-y-0.5 relative">
           <label className="block text-sm font-bold text-[#0A0D12] font-quicksand tracking-[-0.02em]">Author</label>
           <input 
@@ -289,7 +277,6 @@ export function AdminEditBook() {
           )}
         </div>
 
-        {/* Category */}
         <div className="space-y-0.5">
           <label className="block text-sm font-bold text-[#0A0D12] font-quicksand tracking-[-0.02em]">Category</label>
           <select 
@@ -306,7 +293,6 @@ export function AdminEditBook() {
           </select>
         </div>
 
-        {/* Number of Pages */}
         <div className="space-y-0.5">
           <label className="block text-sm font-bold text-[#0A0D12] font-quicksand tracking-[-0.02em]">Number of Pages</label>
           <input 
@@ -320,7 +306,6 @@ export function AdminEditBook() {
           />
         </div>
 
-        {/* Description */}
         <div className="space-y-0.5">
           <label className="block text-sm font-bold text-[#0A0D12] font-quicksand tracking-[-0.02em]">Description</label>
           <textarea 
@@ -333,7 +318,6 @@ export function AdminEditBook() {
           ></textarea>
         </div>
 
-        {/* Cover Image Upload */}
         <div className="space-y-0.5">
           <label className="block text-sm font-bold text-[#0A0D12] font-quicksand tracking-[-0.02em]">Cover Image</label>
           
@@ -398,7 +382,6 @@ export function AdminEditBook() {
           </div>
         </div>
 
-        {/* Tombol Save */}
         <div className="pt-2">
           <button 
             type="submit"

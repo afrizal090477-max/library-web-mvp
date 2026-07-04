@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-// 🚀 STRUKTUR INTERFACE FLEKSIBEL (Anti Error)
+
 export interface LoanItem {
   id: number;
   status: string;
@@ -63,7 +63,6 @@ export function AdminLoanList() {
     fetchLoans();
   }, []);
 
-  // 🚀 FUNGSI HELPER: Format Tanggal Biar Cantik (ex: 31 August 2025)
   const formatDate = (dateString?: string) => {
     if (!dateString) return "-";
     const date = new Date(dateString);
@@ -75,7 +74,6 @@ export function AdminLoanList() {
     });
   };
 
-  // 🚀 FUNGSI HELPER: Hitung Durasi Otomatis (Hari)
   const calculateDuration = (startStr?: string, endStr?: string) => {
     if (!startStr || !endStr) return 0;
     const start = new Date(startStr).getTime();
@@ -84,7 +82,6 @@ export function AdminLoanList() {
     return Math.round((end - start) / (1000 * 60 * 60 * 24));
   };
 
-  // Logika Filter & Search
   const filteredLoans = loans.filter((loan) => {
     const bookData = loan.book || loan.Book;
     const userData = loan.user || loan.User;
@@ -104,7 +101,6 @@ export function AdminLoanList() {
   return (
     <div className="max-w-[1200px] mx-auto space-y-6 pb-12 px-4 sm:px-0">
       
-      {/* TAB NAVIGASI UTAMA */}
       <div className="flex items-center p-2 gap-2 bg-[#F5F5F5] rounded-2xl w-full max-w-[600px] overflow-x-auto hide-scrollbar mt-4 sm:mt-0">
         <button
           className="flex-1 min-w-fit whitespace-nowrap py-2 px-3 text-sm sm:text-base rounded-xl transition-all duration-300 font-quicksand bg-white text-[#0A0D12] font-bold shadow-[0_0_20px_rgba(203,202,202,0.25)]"
@@ -125,7 +121,6 @@ export function AdminLoanList() {
         </button>
       </div>
 
-      {/* Title & Search */}
       <div className="space-y-4 sm:space-y-6">
         <h1 className="text-2xl sm:text-[28px] font-bold text-[#0A0D12] tracking-[-0.03em] font-quicksand">
           Borrowed List
@@ -143,7 +138,6 @@ export function AdminLoanList() {
         </div>
       </div>
 
-      {/* PILLS FILTER */}
       <div className="flex w-full gap-2 pb-2 overflow-x-auto hide-scrollbar">
         {filters.map((filter) => (
           <button
@@ -160,7 +154,6 @@ export function AdminLoanList() {
         ))}
       </div>
 
-      {/* 🚀 LIST PEMINJAMAN */}
       <div className="space-y-4">
         {isLoading ? (
           <div className="p-8 text-center text-[#535862] animate-pulse font-quicksand">Memuat data peminjaman...</div>
@@ -170,16 +163,11 @@ export function AdminLoanList() {
           <div className="p-8 text-center text-[#535862] font-quicksand">Data tidak ditemukan</div>
         ) : (
           filteredLoans.map((loan) => {
-            // Mapping Data Aman
             const bookInfo = loan.book || loan.Book;
             const userInfo = loan.user || loan.User;
-            
-            // Format Tanggal
             const borrowDateStr = formatDate(loan.borrowDate);
             const dueAtStr = formatDate(loan.dueAt || loan.dueDate);
             const duration = calculateDuration(loan.borrowDate, loan.dueAt || loan.dueDate);
-            
-            // 🚀 Cuma nyisain statusColor biar nggak kena semprot ESLint
             const isReturned = loan.status?.toUpperCase() === "RETURNED";
             const isOverdue = loan.status?.toUpperCase() === "OVERDUE";
             const statusColor = isReturned ? "text-[#535862]" : isOverdue ? "text-[#EE1D52]" : "text-[#079455]";
@@ -187,7 +175,6 @@ export function AdminLoanList() {
             return (
               <div key={loan.id} className="flex flex-col p-4 sm:p-5 gap-4 w-full bg-white border border-[#E5E7EB] rounded-2xl relative shadow-sm">
                 
-                {/* Header Card (Status & Due Date) */}
                 <div className="flex justify-between items-center w-full pb-3 border-b border-[#F5F5F5]">
                   <div className="flex items-center gap-2">
                     <span className="text-xs sm:text-sm font-semibold text-[#535862] font-quicksand">Status</span>
@@ -203,10 +190,8 @@ export function AdminLoanList() {
                   </div>
                 </div>
 
-                {/* Body Card */}
                 <div className="flex flex-col items-start justify-between w-full gap-4 sm:flex-row">
                   
-                  {/* Left: Info Buku */}
                   <div className="flex items-start gap-4">
                     <img 
                       src={bookInfo?.coverImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(bookInfo?.title || 'Book')}&background=E0ECFF&color=1C65DA`} 
@@ -229,7 +214,6 @@ export function AdminLoanList() {
                     </div>
                   </div>
 
-                  {/* Right: Info Peminjam */}
                   <div className="flex flex-col items-start mt-2 sm:items-end sm:mt-0">
                     <span className="text-xs sm:text-sm font-medium text-[#535862] font-quicksand mb-1">
                       borrower's name

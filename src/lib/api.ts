@@ -175,3 +175,18 @@ export const getAdminOverview = async (
   const result = await handleResponse<ApiResponse<AdminOverviewData>>(res);
   return result.data;
 };
+
+
+export const getAdminUsers = async (token?: string) => {
+  const authToken = token || localStorage.getItem("token");
+  
+  // Sesuai dokumentasi Swagger backend Henry: GET /api/admin/users
+  const res = await fetch(`${BASE_URL}/admin/users`, {
+    headers: {
+      "Content-Type": "application/json",
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+    },
+  });
+  
+  return handleResponse(res);
+};

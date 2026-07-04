@@ -23,7 +23,6 @@ export function AdminDashboard() {
         setIsLoading(false);
       }
     };
-
     fetchOverview();
   }, []);
 
@@ -34,7 +33,6 @@ export function AdminDashboard() {
       </div>
     );
   }
-
   if (error) {
     return (
       <div className="p-6 text-red-600 border border-red-200 bg-red-50 rounded-xl">
@@ -44,11 +42,11 @@ export function AdminDashboard() {
     );
   }
 
-  // 👇 CARA BACA DATANYA UDAH KITA SESUAIKAN SAMA JSON HENRY 👇
   const totalBooks = overview?.totals?.books || 0;
   const totalMembers = overview?.totals?.users || 0;
   const activeLoans = overview?.loans?.active || 0;
   const overdueLoans = overview?.loans?.overdue || 0;
+  
 
   return (
     <div className="space-y-6">
@@ -56,11 +54,8 @@ export function AdminDashboard() {
         <h1 className="text-2xl font-bold text-[#0A0D12]">Dashboard Overview</h1>
         <p className="text-[#6B7280]">Ringkasan data perpustakaan hari ini.</p>
       </div>
-
-      {/* Kartu Statistik */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
         
-        {/* Card 1: Total Buku */}
         <div className="p-6 bg-white border border-[#E5E7EB] rounded-2xl shadow-sm flex items-center gap-4">
           <div className="w-12 h-12 bg-blue-50 text-[#1C65DA] rounded-full flex items-center justify-center">
             <BookOpen size={24} />
@@ -71,7 +66,6 @@ export function AdminDashboard() {
           </div>
         </div>
 
-        {/* Card 2: Total Member */}
         <div className="p-6 bg-white border border-[#E5E7EB] rounded-2xl shadow-sm flex items-center gap-4">
           <div className="flex items-center justify-center w-12 h-12 text-green-600 rounded-full bg-green-50">
             <Users size={24} />
@@ -82,7 +76,6 @@ export function AdminDashboard() {
           </div>
         </div>
 
-        {/* Card 3: Sedang Dipinjam */}
         <div className="p-6 bg-white border border-[#E5E7EB] rounded-2xl shadow-sm flex items-center gap-4">
           <div className="flex items-center justify-center w-12 h-12 text-orange-500 rounded-full bg-orange-50">
             <Clock size={24} />
@@ -93,7 +86,6 @@ export function AdminDashboard() {
           </div>
         </div>
 
-        {/* Card 4: Telat Mengembalikan (Overdue) */}
         <div className="flex items-center gap-4 p-6 bg-white border border-red-100 shadow-sm rounded-2xl">
           <div className="w-12 h-12 bg-red-50 text-[#EE1D52] rounded-full flex items-center justify-center">
             <AlertOctagon size={24} />
