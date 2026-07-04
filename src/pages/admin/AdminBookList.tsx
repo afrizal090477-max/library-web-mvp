@@ -8,7 +8,8 @@ export interface AdminBookItem {
   title: string;
   author: { name: string };
   category: { name: string };
-  stock: number;
+  availableCopies: number; // 🚀 Ganti stock jadi ini
+  borrowCount: number;     // 🚀 Tambahkan ini
   rating: number;
   coverImage?: string;
 }
@@ -98,8 +99,8 @@ export function AdminBookList() {
   const filteredBooks = books.filter((b) => {
     const matchSearch = b.title.toLowerCase().includes(search.toLowerCase());
     let matchFilter = true;
-    if (activeFilter === "Available") matchFilter = b.stock > 0;
-    if (activeFilter === "Borrowed") matchFilter = b.stock === 0; 
+    if (activeFilter === "Available") matchFilter = b.availableCopies > 0; 
+    if (activeFilter === "Borrowed") matchFilter = b.borrowCount > 0;
     if (activeFilter === "Damaged" || activeFilter === "Returned") matchFilter = true; 
     return matchSearch && matchFilter;
   });
