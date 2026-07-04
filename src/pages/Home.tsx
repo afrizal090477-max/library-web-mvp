@@ -5,7 +5,7 @@ import CategorySection from "@/components/common/CategorySection";
 import RecommendationSection from "@/components/common/RecommendationSection"; 
 import { PopularAuthorsSection } from "@/components/common";
 
-// 🚀 FIX 1: Perbarui interface Book untuk antisipasi properti cover atau coverImage
+
 interface Book {
   id: string | number;
   title: string;
@@ -32,7 +32,6 @@ export const Home = () => {
   const { data: apiResponse } = useQuery<ApiResponse>({
     queryKey: ["recommendedBooksBanner"],
     queryFn: async () => {
-      // 🚀 FIX 2: Paksa kasih parameter page=1 & limit=5 biar API Henry ngasih data!
       const response = await fetch("https://library-backend-production-b9cf.up.railway.app/api/books/recommend?page=1&limit=5");
       if (!response.ok) {
         throw new Error("Network response was not ok");
@@ -42,12 +41,10 @@ export const Home = () => {
   });
 
   const recommendedBooks = apiResponse?.data?.books || [];
-  
-  // 🚀 FIX 3: Ambil URL gambar dengan aman dan saring (filter) buku yang gak ada gambarnya
   const bannerCovers = Array.isArray(recommendedBooks) 
     ? recommendedBooks
         .map((book) => book.coverImage || book.cover)
-        .filter(Boolean) as string[] // Buang yang isinya undefined/kosong biar banner gak error
+        .filter(Boolean) as string[] 
     : [];
 
   const handleSelectCategory = (categoryName: string) => {
@@ -58,7 +55,6 @@ export const Home = () => {
     <div className="w-full max-w-[1440px] mx-auto min-h-screen bg-[#FFFFFF] relative pt-[24px] md:pt-[40px] pb-[80px] overflow-x-hidden">
       <div className="mx-auto w-full md:max-w-[1200px] flex flex-col items-center md:items-start gap-[24px] md:gap-[48px] px-4 md:px-0">
         
-        {/* Banner sekarang hanya menerima array string URL gambar yang valid */}
         <HeroSection covers={bannerCovers} />
         
         <CategorySection activeCategory={activeCategory} onSelectCategory={handleSelectCategory} />
