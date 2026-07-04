@@ -11,6 +11,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      // 👇 Cukup tulis "/api" di sini, biar Vite tahu mana yang harus di-proxy
       "/api": {
         target: "https://library-backend-production-b9cf.up.railway.app",
         changeOrigin: true,

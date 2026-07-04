@@ -1,6 +1,5 @@
 // src/lib/api.ts
 
-// PERBAIKAN: Menambahkan import BorrowedBook dan Review
 import {
   Book,
   BookDetail,
@@ -11,7 +10,8 @@ import {
   Review,
 } from "@/types";
 
-const BASE_URL = "/apii";
+// 🛡️ MENGGUNAKAN RELATIVE URL (PROXY) AGAR AMAN DARI CORS DI LOKAL & VERCEL
+const BASE_URL = "/api";
 
 const handleResponse = async <T>(res: Response): Promise<T> => {
   const json = await res.json();
@@ -115,11 +115,8 @@ export const getMe = async (token: string) => {
 export const getBorrowedBooks = async (
   token?: string,
 ): Promise<BorrowedBook[]> => {
-  // Ambil token dari parameter, atau fallback ke localStorage
   const authToken = token || localStorage.getItem("token");
 
-  // NOTE: Pastikan endpoint /loans/me ini sesuai dengan dokumentasi API Backend-mu!
-  // (Bisa jadi namanya /borrows, /user/loans, dll)
   const res = await fetch(`${BASE_URL}/loans/me`, {
     headers: {
       "Content-Type": "application/json",
@@ -134,7 +131,6 @@ export const getBorrowedBooks = async (
 export const getUserReviews = async (token?: string): Promise<Review[]> => {
   const authToken = token || localStorage.getItem("token");
 
-  // NOTE: Pastikan endpoint /reviews/me ini sesuai dengan dokumentasi API Backend-mu!
   const res = await fetch(`${BASE_URL}/reviews/me`, {
     headers: {
       "Content-Type": "application/json",
@@ -144,4 +140,54 @@ export const getUserReviews = async (token?: string): Promise<Review[]> => {
 
   const result = await handleResponse<ApiResponse<Review[]>>(res);
   return result.data || [];
+};
+
+// =========================================================
+// TAMBAHAN BARU UNTUK HALAMAN ADMIN
+// =========================================================
+
+// Cetakan untuk data buku terlaris dari backend
+export interface TopBorrowedBook {
+  id: number;
+  title: string;
+  borrowCount: number;
+  rating: number;
+  availableCopies: number;
+  totalCopies: number;
+  author: {
+    id: number;
+    name: string;
+  };
+  category: {
+    id: number;
+    name: string;
+  };
+}
+
+// Cetakan tipe data SESUAI DENGAN API BACKEND HENRY
+export interface AdminOverviewData {
+  totals: {
+    users: number;
+    books: number;
+  };
+  loans: {
+    active: number;
+    overdue: number;
+  };
+  topBorrowed: TopBorrowedBook[]; // 👈 'any' udah kita ganti jadi tipe yang jelas!
+  generatedAt: string;
+}
+
+export const getAdminOverview = async (token?: string): Promise<AdminOverviewData> => {
+  const authToken = token || localStorage.getItem("token");
+
+  const res = await fetch(`${BASE_URL}/admin/overview`, {
+    headers: {
+      "Content-Type": "application/json",
+      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+    },
+  });
+
+  const result = await handleResponse<ApiResponse<AdminOverviewData>>(res);
+  return result.data;
 };

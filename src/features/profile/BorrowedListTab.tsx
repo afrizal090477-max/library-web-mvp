@@ -35,12 +35,16 @@ export function BorrowedListTab() {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch("/apii/me/loans?page=1&limit=50", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+        // 🚀 URL SUDAH DIPERBAIKI (TIDAK DOUBLE LAGI)
+        const response = await fetch(
+          "https://library-backend-production-b9cf.up.railway.app/api/me/loans?page=1&limit=50",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
           },
-        });
+        );
 
         const json = await response.json();
         if (json.success && json.data && Array.isArray(json.data.loans)) {
@@ -69,18 +73,22 @@ export function BorrowedListTab() {
     setIsSubmitting(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/apii/reviews", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+      // 🚀 URL SUDAH DIPERBAIKI (TIDAK DOUBLE LAGI)
+      const response = await fetch(
+        "https://library-backend-production-b9cf.up.railway.app/api/reviews",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            bookId: selectedBookId,
+            star: rating,
+            comment: reviewText || null, 
+          }),
         },
-        body: JSON.stringify({
-          bookId: selectedBookId,
-          star: rating,
-          comment: reviewText || null, // Kirim null jika kosong sesuai struktur API
-        }),
-      });
+      );
 
       const json = await response.json();
       if (json.success || response.ok) {
@@ -93,7 +101,6 @@ export function BorrowedListTab() {
         toast.error(json.message || "Gagal mengirim ulasan");
       }
     } catch {
-      // <-- Kosongkan saja kurung kurawalnya
       toast.error("Terjadi kesalahan jaringan");
     } finally {
       setIsSubmitting(false);

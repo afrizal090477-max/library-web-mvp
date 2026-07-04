@@ -24,7 +24,7 @@ export const PopularAuthorsSection = () => {
     queryKey: ["popularAuthors"],
     queryFn: async () => {
       // TODO: Sesuaikan URL endpoint ini dengan routing backend kamu
-      const response = await fetch("/api/authors/popular");
+      const response = await fetch("https://library-backend-production-b9cf.up.railway.app/api/authors/popular");
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }

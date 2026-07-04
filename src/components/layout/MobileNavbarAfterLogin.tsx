@@ -23,7 +23,6 @@ export function MobileNavbarAfterLogin() {
   const cartCount = cartItems.length;
 
   const userAvatar = user?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=E0ECFF&color=1C65DA`;
-
   // STATE UNTUK LIVE SEARCH
   const [searchQuery, setSearchQuery] = useState("");
 

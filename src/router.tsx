@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { MainLayout } from './layouts/MainLayout';
-// Import si Satpam! (Sesuaikan path-nya ya)
+// 👇 INI YANG SAYA BENERIN: Kita arahin ke folder pages/admin
+import AdminLayout from '@/pages/admin/AdminLayout'; 
 import { ProtectedRoute } from '@/routes/ProtectedRoute'; 
 
 import Login from '@/pages/Login';
@@ -13,15 +14,20 @@ import BookList from '@/pages/BookList';
 import Checkout from './pages/Checkout';
 import AuthorDetail from './pages/AuthorDetail';
 import Success from './pages/Success';
+import { AdminDashboard } from './pages/admin/AdminDashboard';
+import { AdminUserList } from './pages/admin/AdminUserList';
+import { AdminBookList } from './pages/admin/AdminBookList';
+import { AdminAddBook } from './pages/admin/AdminAddBook';
+import { AdminLoanList } from './pages/admin/AdminLoanList';
+import { AdminEditBook } from './pages/admin/AdminEditBook';
+import { AdminPreviewBook } from './pages/admin/AdminPreviewBook';
+import { AdminProfile } from './pages/admin/AdminProfile';
 
 
 export const router = createBrowserRouter([
   {
     element: <MainLayout />,
     children: [
-      // ==========================================
-      // RUTE PUBLIK (Bebas diakses tanpa login)
-      // ==========================================
       { path: '/', element: <Home /> },
       { path: '/login', element: <Login /> },
       { path: '/register', element: <Register /> },
@@ -29,11 +35,8 @@ export const router = createBrowserRouter([
       { path: '/books/:id', element: <BookDetail /> }, 
       { path: '/authors/:id', element: <AuthorDetail /> },
       
-      // ==========================================
-      // RUTE PRIVAT (Wajib punya Token Login!)
-      // ==========================================
       {
-        element: <ProtectedRoute />, // Satpamnya jaga di pintu ini
+        element: <ProtectedRoute />, 
         children: [
           { path: '/profile', element: <Profile />},
           { path: '/cart', element: <Cart />},
@@ -43,4 +46,19 @@ export const router = createBrowserRouter([
       }
     ],
   },
+
+  {
+    path: '/admin',
+    element: <AdminLayout />, 
+    children: [
+      { path: 'dashboard', element: <AdminDashboard /> },
+      { path: 'books', element: <AdminBookList /> },
+      { path: 'users', element: <AdminUserList /> },
+      { path: 'books/add', element: <AdminAddBook /> },
+      { path: 'loans', element: <AdminLoanList /> },
+      { path: 'books/edit/:id', element: <AdminEditBook /> },
+      { path: 'books/:id', element: <AdminPreviewBook /> },
+      { path: 'profile', element: <AdminProfile /> },
+    ],
+  }
 ]);

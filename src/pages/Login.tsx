@@ -38,7 +38,14 @@ export default function Login() {
       const { user, token } = await login(email, password);
       dispatch(setCredentials({ user, token }));
       toast.success("Login berhasil! Selamat datang kembali.");
-      navigate("/");
+      
+      // 🚦 JALUR LALU LINTAS ROLE ADMIN vs MEMBER
+      if (user.role === 'admin') {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/");
+      }
+      
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);

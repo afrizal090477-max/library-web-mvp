@@ -53,7 +53,7 @@ Project ini mengadopsi teknologi _frontend_ paling modern dengan standar industr
 Sistem _frontend_ ini terintegrasi penuh dengan RESTful API _backend_ yang dikembangkan oleh **Henry Rivardo**.
 Dokumentasi interaktif API dapat diakses melalui Swagger UI:
 
-👉 **[Booky REST API Documentation - Swagger UI](/apii-swagger/#/)**
+👉 **[Booky REST API Documentation - Swagger UI](https://library-backend-production-b9cf.up.railway.app/apii-swagger/#/)**
 
 ---
 

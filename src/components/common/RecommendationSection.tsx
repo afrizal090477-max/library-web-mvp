@@ -19,7 +19,7 @@ export const RecommendationSection = ({ selectedCategory }: { selectedCategory: 
       initialPageParam: 1,
       queryFn: async ({ pageParam = 1 }) => {
         const cat = selectedCategory ? `&categoryId=${selectedCategory}` : "";
-        const res = await fetch(`/api/books/recommend?page=${pageParam}&limit=10${cat}`);
+        const res = await fetch(`https://library-backend-production-b9cf.up.railway.app/api/books/recommend?page=${pageParam}&limit=10${cat}`);
         return res.json();
       },
       getNextPageParam: (last) => last.data.pagination.page < last.data.pagination.totalPages 

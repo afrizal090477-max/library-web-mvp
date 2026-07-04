@@ -31,7 +31,7 @@ export const BookListSection = ({ selectedCategory, searchQuery }: BookListSecti
       if (searchQuery) params.append("search", searchQuery); 
 
       const queryString = params.toString();
-      const url = `/api/books${queryString ? `?${queryString}` : ""}`;
+      const url = `https://library-backend-production-b9cf.up.railway.app/api/books${queryString ? `?${queryString}` : ""}`;
 
       const response = await fetch(url);
       if (!response.ok) {
