@@ -45,15 +45,19 @@ export function AdminLoanList() {
         setIsLoading(true);
         const token = localStorage.getItem("token");
         
-        // 🚀 Tembak langsung ke URL API Production Railway
-        const res = await fetch(`${BASE_URL}/admin/loans?status=all&page=1&limit=100`, {
+        // 🚀 FIX 1: Ubah limit jadi 20 sesuai standar Swagger backend
+        const res = await fetch(`${BASE_URL}/admin/loans?status=all&page=1&limit=20`, {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`, // Pastikan spasi setelah Bearer
           },
         });
         
-        if (!res.ok) throw new Error("Gagal mengambil data peminjaman");
+        // 🚀 FIX 2: Tangkap pesan error asli dari backend biar kita tahu masalahnya!
+        if (!res.ok) {
+          const errJson = await res.json().catch(() => ({}));
+          throw new Error(errJson.message || `Error Server: ${res.status}`);
+        }
         
         const json = await res.json();
         const loanData = Array.isArray(json.data) ? json.data : json.data?.loans || [];
