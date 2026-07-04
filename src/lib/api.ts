@@ -8,7 +8,7 @@ import {
   Review,
 } from "@/types";
 
-const BASE_URL = "/api";
+const BASE_URL = "https://library-backend-production-b9cf.up.railway.app/api";
 
 const handleResponse = async <T>(res: Response): Promise<T> => {
   const json = await res.json();
@@ -158,11 +158,13 @@ export interface AdminOverviewData {
     active: number;
     overdue: number;
   };
-  topBorrowed: TopBorrowedBook[]; 
+  topBorrowed: TopBorrowedBook[];
   generatedAt: string;
 }
 
-export const getAdminOverview = async (token?: string): Promise<AdminOverviewData> => {
+export const getAdminOverview = async (
+  token?: string,
+): Promise<AdminOverviewData> => {
   const authToken = token || localStorage.getItem("token");
   const res = await fetch(`${BASE_URL}/admin/overview`, {
     headers: {
