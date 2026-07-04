@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Search, Star, MoreHorizontal, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { BASE_URL } from "@/lib/api"; // 🚀 Import BASE_URL di sini!
 
 export interface AdminBookItem {
   id: number;
@@ -30,7 +31,9 @@ export function AdminBookList() {
       try {
         setIsLoading(true);
         const token = localStorage.getItem("token");
-        const res = await fetch("/api/admin/books", {
+        
+        // 🚀 PERBAIKAN: Gunakan BASE_URL untuk GET data buku
+        const res = await fetch(`${BASE_URL}/admin/books`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -61,7 +64,9 @@ export function AdminBookList() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`/api/books/${bookToDelete.id}`, {
+      
+      // 🚀 PERBAIKAN: Gunakan BASE_URL untuk DELETE buku
+      const res = await fetch(`${BASE_URL}/books/${bookToDelete.id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
