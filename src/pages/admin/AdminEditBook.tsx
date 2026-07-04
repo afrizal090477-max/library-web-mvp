@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { ArrowLeft, UploadCloud, X, ImageIcon, Trash2 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { BASE_URL } from "@/lib/api"; // 🚀 Import BASE_URL di sini
 
 interface Author { id: number; name: string; }
 interface Category { id: number; name: string; }
@@ -38,10 +39,11 @@ export function AdminEditBook() {
         const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
         
+        // 🚀 PERBAIKAN: Tembak URL dengan BASE_URL
         const [authRes, catRes, bookRes] = await Promise.all([
-          fetch("/api/authors", { headers }),
-          fetch("/api/categories", { headers }),
-          fetch(`/api/books/${id}`, { headers })
+          fetch(`${BASE_URL}/authors`, { headers }),
+          fetch(`${BASE_URL}/categories`, { headers }),
+          fetch(`${BASE_URL}/books/${id}`, { headers })
         ]);
         if (authRes.ok) {
           const authData = await authRes.json();
@@ -57,7 +59,7 @@ export function AdminEditBook() {
           
           setFormData({
             title: book.title || "",
-            isbn: book.isbn || "", // Simpan gaib di sini
+            isbn: book.isbn || "", 
             categoryId: book.category?.id?.toString() || book.categoryId?.toString() || "",
             pages: book.totalPages?.toString() || "",
             description: book.description || "",
@@ -136,7 +138,8 @@ export function AdminEditBook() {
         if (existingAuthor) {
           finalAuthorId = existingAuthor.id;
         } else {
-          const createAuthRes = await fetch("/api/authors", {
+          // 🚀 PERBAIKAN: Tembak URL dengan BASE_URL
+          const createAuthRes = await fetch(`${BASE_URL}/authors`, {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             body: JSON.stringify({ 
@@ -164,7 +167,8 @@ export function AdminEditBook() {
         totalPages: Number(formData.pages) || 0
       };
 
-      const res = await fetch(`/api/books/${id}`, {
+      // 🚀 PERBAIKAN: Tembak URL dengan BASE_URL
+      const res = await fetch(`${BASE_URL}/books/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft, Star, Share2 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
+import { BASE_URL } from "@/lib/api"; // 🚀 Import BASE_URL di sini
 
 export interface BookDetail {
   id: number;
@@ -26,12 +27,15 @@ export function AdminPreviewBook() {
       try {
         setIsLoading(true);
         const token = localStorage.getItem("token");
-        const res = await fetch(`/api/books/${id}`, {
+        
+        // 🚀 PERBAIKAN: Gunakan BASE_URL untuk mengambil detail buku
+        const res = await fetch(`${BASE_URL}/books/${id}`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         });
+        
         if (!res.ok) throw new Error("Gagal mengambil data buku");
         const json = await res.json();
         const bookData = json.data?.book || json.data;
@@ -45,9 +49,11 @@ export function AdminPreviewBook() {
     };
     if (id) fetchBookDetail();
   }, [id]);
+
   if (isLoading) {
     return <div className="p-12 text-center text-[#535862] font-quicksand animate-pulse text-lg">Memuat detail buku...</div>;
   }
+  
   if (error || !book) {
     return <div className="p-12 text-center font-bold text-[#EE1D52] font-quicksand text-lg">{error || "Buku tidak ditemukan"}</div>;
   }
