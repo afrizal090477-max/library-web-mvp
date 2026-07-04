@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { BASE_URL } from "@/lib/api"; // 🚀 Import BASE_URL di sini!
+import { BASE_URL } from "@/lib/api"; 
 
 export interface LoanItem {
   id: number;
-  status: string;
-  borrowDate?: string;
-  dueAt?: string;
+  status: string; // "BORROWED" atau "RETURNED"
+  displayStatus?: string;
+  borrowedAt?: string; // Sesuai respons API
+  borrowDate?: string; 
+  dueAt?: string;      // Sesuai respons API
   dueDate?: string; 
+  durationDays?: number; // Sesuai respons API
+  borrower?: { name: string }; // Sesuai respons API
   user?: { name: string };
   User?: { name: string }; 
   book?: {
@@ -32,7 +36,7 @@ export function AdminLoanList() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   
-  const [activeFilter, setActiveFilter] = useState("All");
+  const [activeFilter, setActiveFilter] = useState("Active"); // Default ke tab Active biar langsung kelihatan yang lagi dipinjam
   const filters = ["All", "Active", "Returned", "Overdue"];
 
   useEffect(() => {
@@ -41,8 +45,8 @@ export function AdminLoanList() {
         setIsLoading(true);
         const token = localStorage.getItem("token");
         
-        // 🚀 PERBAIKAN: Tembak langsung ke URL API Production Railway!
-        const res = await fetch(`${BASE_URL}/admin/loans`, {
+        // 🚀 Tembak langsung ke URL API Production Railway
+        const res = await fetch(`${BASE_URL}/admin/loans?status=all&page=1&limit=100`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -71,7 +75,7 @@ export function AdminLoanList() {
     if (isNaN(date.getTime())) return "-";
     return date.toLocaleDateString("en-GB", {
       day: "numeric",
-      month: "long",
+      month: "short",
       year: "numeric"
     });
   };
@@ -84,17 +88,23 @@ export function AdminLoanList() {
     return Math.round((end - start) / (1000 * 60 * 60 * 24));
   };
 
+  // 🚀 ACTION FIX: LOGIC FILTER KAPITAL DAN SINKRONISASI FIELD API
   const filteredLoans = loans.filter((loan) => {
     const bookData = loan.book || loan.Book;
-    const userData = loan.user || loan.User;
+    const userData = loan.borrower || loan.user || loan.User; // Sesuaikan dengan API
     
     const titleMatch = bookData?.title?.toLowerCase().includes(search.toLowerCase()) || false;
     const userMatch = userData?.name?.toLowerCase().includes(search.toLowerCase()) || false;
     const matchSearch = titleMatch || userMatch;
     
     let matchFilter = true;
-    if (activeFilter !== "All") {
-      matchFilter = loan.status?.toUpperCase() === activeFilter.toUpperCase();
+    if (activeFilter === "Active") {
+      matchFilter = loan.status === "BORROWED";
+    } else if (activeFilter === "Returned") {
+      matchFilter = loan.status === "RETURNED";
+    } else if (activeFilter === "Overdue") {
+      const dueDate = new Date(loan.dueAt || loan.dueDate || "");
+      matchFilter = loan.status === "BORROWED" && new Date() > dueDate;
     }
     
     return matchSearch && matchFilter;
@@ -166,27 +176,40 @@ export function AdminLoanList() {
         ) : (
           filteredLoans.map((loan) => {
             const bookInfo = loan.book || loan.Book;
-            const userInfo = loan.user || loan.User;
-            const borrowDateStr = formatDate(loan.borrowDate);
+            const userInfo = loan.borrower || loan.user || loan.User;
+            const borrowDateStr = formatDate(loan.borrowedAt || loan.borrowDate);
             const dueAtStr = formatDate(loan.dueAt || loan.dueDate);
-            const duration = calculateDuration(loan.borrowDate, loan.dueAt || loan.dueDate);
+            const duration = loan.durationDays || calculateDuration(loan.borrowedAt || loan.borrowDate, loan.dueAt || loan.dueDate);
+            
             const isReturned = loan.status?.toUpperCase() === "RETURNED";
-            const isOverdue = loan.status?.toUpperCase() === "OVERDUE";
-            const statusColor = isReturned ? "text-[#535862]" : isOverdue ? "text-[#EE1D52]" : "text-[#079455]";
+            const dueDateObj = new Date(loan.dueAt || loan.dueDate || "");
+            const isOverdue = loan.status?.toUpperCase() === "BORROWED" && new Date() > dueDateObj;
+            
+            // Logika pewarnaan status yang lebih akurat
+            let displayStatus = loan.status;
+            let statusColor = "text-[#079455]"; // Default hijau (Active)
+            
+            if (isReturned) {
+              displayStatus = "RETURNED";
+              statusColor = "text-[#535862]"; // Abu-abu
+            } else if (isOverdue) {
+              displayStatus = "OVERDUE";
+              statusColor = "text-[#EE1D52]"; // Merah
+            }
 
             return (
-              <div key={loan.id} className="flex flex-col p-4 sm:p-5 gap-4 w-full bg-white border border-[#E5E7EB] rounded-2xl relative shadow-sm">
+              <div key={loan.id} className="flex flex-col p-4 sm:p-5 gap-4 w-full bg-white border border-[#E5E7EB] rounded-2xl relative shadow-sm hover:shadow-md transition-shadow">
                 
                 <div className="flex justify-between items-center w-full pb-3 border-b border-[#F5F5F5]">
                   <div className="flex items-center gap-2">
                     <span className="text-xs sm:text-sm font-semibold text-[#535862] font-quicksand">Status</span>
                     <span className={`text-xs sm:text-sm font-bold ${statusColor} font-quicksand uppercase`}>
-                      {loan.status}
+                      {displayStatus}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs sm:text-sm font-semibold text-[#535862] font-quicksand">Due Date</span>
-                    <span className="px-2 py-1 bg-[#EE1D52]/10 text-[#EE1D52] rounded text-xs sm:text-sm font-bold font-quicksand">
+                    <span className={`px-2 py-1 rounded text-xs sm:text-sm font-bold font-quicksand ${isOverdue ? 'bg-[#EE1D52]/10 text-[#EE1D52]' : 'bg-gray-100 text-[#0A0D12]'}`}>
                       {dueAtStr}
                     </span>
                   </div>
@@ -198,11 +221,11 @@ export function AdminLoanList() {
                     <img 
                       src={bookInfo?.coverImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(bookInfo?.title || 'Book')}&background=E0ECFF&color=1C65DA`} 
                       alt={bookInfo?.title} 
-                      className="w-[72px] h-[108px] object-cover rounded-md flex-shrink-0 border border-gray-100"
+                      className="w-[72px] h-[108px] object-cover rounded-md flex-shrink-0 border border-[#D5D7DA]"
                     />
                     <div className="flex flex-col gap-1">
                       <span className="px-2 py-0.5 border border-[#D5D7DA] rounded text-[10px] sm:text-xs font-bold text-[#0A0D12] font-quicksand w-fit">
-                        {bookInfo?.category?.name || "Category"}
+                        {bookInfo?.category?.name || "Uncategorized"}
                       </span>
                       <h3 className="text-sm sm:text-base font-bold text-[#0A0D12] font-quicksand tracking-[-0.02em] line-clamp-2 mt-1">
                         {bookInfo?.title || "Unknown Book"}
@@ -218,7 +241,7 @@ export function AdminLoanList() {
 
                   <div className="flex flex-col items-start mt-2 sm:items-end sm:mt-0">
                     <span className="text-xs sm:text-sm font-medium text-[#535862] font-quicksand mb-1">
-                      borrower's name
+                      Borrower's Name
                     </span>
                     <span className="text-sm sm:text-base font-bold text-[#0A0D12] font-quicksand">
                       {userInfo?.name || "Unknown User"}

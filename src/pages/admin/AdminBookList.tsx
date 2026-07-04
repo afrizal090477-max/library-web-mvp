@@ -65,8 +65,6 @@ export function AdminBookList() {
 
     try {
       const token = localStorage.getItem("token");
-      
-      // 🚀 PERBAIKAN: Gunakan BASE_URL untuk DELETE buku
       const res = await fetch(`${BASE_URL}/books/${bookToDelete.id}`, {
         method: "DELETE",
         headers: {
@@ -99,9 +97,14 @@ export function AdminBookList() {
   const filteredBooks = books.filter((b) => {
     const matchSearch = b.title.toLowerCase().includes(search.toLowerCase());
     let matchFilter = true;
-    if (activeFilter === "Available") matchFilter = b.availableCopies > 0; 
-    if (activeFilter === "Borrowed") matchFilter = b.borrowCount > 0;
-    if (activeFilter === "Damaged" || activeFilter === "Returned") matchFilter = true; 
+    if (activeFilter === "Available") {
+      matchFilter = b.availableCopies > 0;
+    } else if (activeFilter === "Borrowed") {
+      matchFilter = b.borrowCount > 0;
+    } else if (activeFilter === "Damaged" || activeFilter === "Returned") {
+      matchFilter = false; 
+    }
+    
     return matchSearch && matchFilter;
   });
 
