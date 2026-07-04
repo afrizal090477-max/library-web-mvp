@@ -5,13 +5,13 @@ import { BookCard } from '@/components/common/BookCard';
 import { Book, Author } from '@/types';
 import { getBooks } from '@/lib/api'; 
 
-// 1. Tipe baru biar bebas dari 'any'
+
+
 type AuthorWithDetails = Author & {
   avatar?: string;
   booksCount?: number;
 };
 
-// 2. Interface Response API
 interface SearchApiResponse {
   data?: {
     books?: Book[];
@@ -71,8 +71,6 @@ export default function AuthorDetail() {
       fetchAuthorData();
     }
   }, [id]);
-
-  // 3. Kita HAPUS bungkus <MainLayout> karena routingmu pakai Outlet
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-[50vh]">
@@ -96,7 +94,6 @@ export default function AuthorDetail() {
     <div className="w-full bg-[#FAFAFA] min-h-screen pb-20 font-['Quicksand']">
       <div className="w-full max-w-[1200px] mx-auto px-[16px] md:px-[0px] flex flex-col items-center md:items-start pt-[24px] md:pt-[48px] gap-[32px] md:gap-[40px]">
         
-        {/* Card Author Profile */}
         <div className="flex flex-row items-center p-[12px] md:p-[16px] gap-[12px] md:gap-[16px] w-full max-w-[361px] md:max-w-full bg-white shadow-[0px_0px_20px_rgba(203,202,202,0.25)] rounded-[16px]">
           
           <img 
@@ -122,7 +119,6 @@ export default function AuthorDetail() {
           
         </div>
 
-        {/* Book List Grid */}
         <div className="flex flex-col items-start gap-[16px] md:gap-[32px] w-full max-w-[361px] md:max-w-full">
           
           <h2 className="font-bold text-[24px] leading-[36px] md:text-[36px] md:leading-[44px] md:tracking-[-0.02em] text-[#0A0D12]">

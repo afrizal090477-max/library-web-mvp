@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft, Star, Share2 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
-import { BASE_URL } from "@/lib/api"; // 🚀 Import BASE_URL di sini
+import { BASE_URL } from "@/lib/api"; 
 
 export interface BookDetail {
   id: number;

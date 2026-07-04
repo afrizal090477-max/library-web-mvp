@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { Search, Star, MoreHorizontal, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { BASE_URL } from "@/lib/api"; // 🚀 Import BASE_URL di sini!
+import { BASE_URL } from "@/lib/api"; 
 
 export interface AdminBookItem {
   id: number;
   title: string;
   author: { name: string };
   category: { name: string };
-  availableCopies: number; // 🚀 Ganti stock jadi ini
-  borrowCount: number;     // 🚀 Tambahkan ini
+  availableCopies: number; 
+  borrowCount: number;     
   rating: number;
   coverImage?: string;
 }
@@ -32,8 +32,6 @@ export function AdminBookList() {
       try {
         setIsLoading(true);
         const token = localStorage.getItem("token");
-        
-        // 🚀 PERBAIKAN: Gunakan BASE_URL untuk GET data buku
         const res = await fetch(`${BASE_URL}/admin/books`, {
           headers: {
             "Content-Type": "application/json",
@@ -62,7 +60,6 @@ export function AdminBookList() {
 
   const confirmDeleteBook = async () => {
     if (!bookToDelete) return;
-
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(`${BASE_URL}/books/${bookToDelete.id}`, {
@@ -71,16 +68,13 @@ export function AdminBookList() {
           Authorization: `Bearer ${token}`,
         },
       });
-
       if (!res.ok) {
         const errJson = await res.json();
         throw new Error(errJson.message || "Gagal menghapus buku");
       }
-
       setToastMessage("Data berhasil dihapus");
       setRefreshTrigger(prev => prev + 1);
       setTimeout(() => setToastMessage(null), 3000);
-
     } catch (err: unknown) {
       if (err instanceof Error) alert(err.message);
       else alert("Gagal menghapus karena ada kendala sistem");
@@ -104,9 +98,9 @@ export function AdminBookList() {
     } else if (activeFilter === "Damaged" || activeFilter === "Returned") {
       matchFilter = false; 
     }
-    
     return matchSearch && matchFilter;
   });
+  
 
   return (
     <div className="max-w-[1200px] mx-auto space-y-6 pb-12 relative px-4 sm:px-0">

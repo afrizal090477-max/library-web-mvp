@@ -1,93 +1,86 @@
 # 📚 Booky - Enterprise Digital Library System
 
-![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
-![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
-![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
-![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
-![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-%23593d88.svg?style=for-the-badge&logo=redux&logoColor=white)
-![React Router](https://img.shields.io/badge/React_Router-CA4245?style=for-the-badge&logo=react-router&logoColor=white)
+[![React](https://img.shields.io/badge/React-18.x-20232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Vite](https://img.shields.io/badge/Vite-5.x-646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-Latest-593d88.svg?style=for-the-badge&logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
 
-**Booky** adalah platform manajemen perpustakaan digital terpadu berskala _enterprise_ yang dirancang untuk memberikan pengalaman peminjaman buku yang modern, cepat, dan intuitif. Sistem ini dilengkapi dengan antarmuka pengguna yang interaktif serta _dashboard_ manajemen penuh untuk administrator.
+**Booky** is a modern, scalable, and intuitive digital library management platform. Designed with an enterprise-grade architecture, it delivers a seamless experience for both library patrons and administrators through a high-performance User Interface and a comprehensive Management Backoffice.
 
-Aplikasi ini dibangun menggunakan arsitektur **Feature-Sliced Design (FSD)** pada _frontend_ untuk memastikan skalabilitas, kemudahan _maintenance_, dan performa yang optimal.
-
----
-
-## ✨ Key Features
-
-### 👤 Member Portal (User Interface)
-
-- **Secure Authentication:** Sistem login dan registrasi berbasis JWT dengan implementasi _Protected Routes_.
-- **Smart Catalog & Discovery:** Eksplorasi koleksi buku dengan fitur pencarian, filter kategori, buku rekomendasi (_rating-based_), dan _popular authors_.
-- **Interactive Book Details:** Halaman detail komprehensif yang memuat pratinjau buku, metadata, dan ulasan (_reviews_) dari pembaca lain.
-- **Cart & Checkout System:** Sistem _cart_ untuk menyimpan buku sementara sebelum melakukan proses konfirmasi peminjaman dengan opsi durasi fleksibel (3/5/10 hari).
-- **Comprehensive Profile Management:**
-  - **My Profile:** Pengelolaan data pribadi dan pembaruan avatar.
-  - **Borrowed List:** Pelacakan status peminjaman secara _real-time_ (_Active, Late, Returned_) lengkap dengan perhitungan sisa durasi.
-  - **Review System:** Ekosistem ulasan interaktif yang memungkinkan pengguna memberikan _rating_ dan komentar pada buku yang telah selesai dipinjam.
-
-### 👑 Admin Control Panel (Backoffice)
-
-- **Analytics Dashboard:** Ringkasan statistik perpustakaan, termasuk total buku, _active/overdue loans_, dan buku paling populer.
-- **Inventory Management:** Modul CRUD (_Create, Read, Update, Delete_) lengkap untuk entitas Buku, Penulis (Author), dan Kategori.
-- **Loan & Circulation Tracking:** Manajemen sirkulasi buku untuk memantau status peminjaman, menyetujui pengembalian, dan melacak daftar _overdue_.
-- **User Management:** Pemantauan dan pengelolaan data anggota perpustakaan.
+**[View Live Demo](https://library-web-mvp-tau.vercel.app/)** • **[API Documentation](https://library-backend-production-b9cf.up.railway.app/api-swagger/#/)**
 
 ---
 
-## 🛠️ Tech Stack & Architecture
+## 🏗️ System Architecture
 
-Project ini mengadopsi teknologi _frontend_ paling modern dengan standar industri:
+The application implements a decoupled architecture, separating the client-side presentation layer from the backend API services.
 
-- **Framework:** React 18 dengan Vite untuk _HMR (Hot Module Replacement)_ yang super cepat.
-- **Language:** TypeScript untuk _type-safety_ dan meminimalisir _runtime errors_.
-- **State Management:** Redux Toolkit (RTK) untuk manajemen _state_ global yang terprediksi.
-- **Routing:** React Router v6 dengan arsitektur _Data Router_ (Object-based routing).
-- **Styling & UI:** Tailwind CSS untuk _utility-first styling_, dipadukan dengan Lucide React untuk ikonografi, dan Sonner untuk _toast notifications_.
-- **Architecture Pattern:** Feature-Based Architecture (memisahkan _logic_ dan UI ke dalam folder `features/` untuk isolasi _domain_ yang lebih baik).
+```mermaid
+graph LR
+    A[Client Browser] -->|HTTPS| B(Vercel Edge Network)
+    B --> C{React App}
+    C -->|State| D[(Redux Toolkit)]
+    C -->|REST API| E[Railway Backend]
+    E --> F[(PostgreSQL Database)]
 
----
+👤 Member Domain (Client Interface)
+Secure Access: JWT-based authentication with strict protected routing.
+Smart Catalog: Advanced book discovery featuring dynamic search, category filtering, and rating-based recommendations.
+Cart & Checkout: Temporary cart state management for borrowing books with flexible duration options (3, 5, or 10 days).
+Interactive Details: Comprehensive book metadata, real-time stock validation, and user review ecosystem.
+Loan Tracking: Real-time monitoring of borrowed assets with precise Active, Returned, and Overdue status indicators.
 
-## 🔗 API Integration
+👑 Admin Domain (Backoffice)
+Executive Dashboard: High-level metrics overview including total users, asset inventory, and circulation statistics.
+Inventory Control: Full CRUD capabilities for Books, Categories, and Authors, optimized with automated asset handling.
+Circulation Management: Real-time tracking of all book loans, return approvals, and strict overdue monitoring.
+User Management: Centralized control panel for monitoring and managing library members.
 
-Sistem _frontend_ ini terintegrasi penuh dengan RESTful API _backend_ yang dikembangkan oleh **Henry Rivardo**.
-Dokumentasi interaktif API dapat diakses melalui Swagger UI:
+Tech Stack & Engineering Standards
+Built with Clean Code principles and adopting Feature-Sliced Design (FSD) to ensure long-term scalability and maintainability.
+Core: React 18, TypeScript, Vite
+State Management: Redux Toolkit (RTK)
+Routing: React Router v6 (Data Router Architecture)
+Styling: Tailwind CSS (Utility-first), Lucide React (Iconography)
+Feedback & UX: Sonner (Toast notifications)
 
-👉 **[Booky REST API Documentation - Swagger UI](https://library-backend-production-b9cf.up.railway.app/apii-swagger/#/)**
 
----
+📂 Directory Structure
+Plaintext
+src/
+├── assets/       # Static media and brand assets
+├── components/   # Reusable, stateless UI components (Buttons, Modals, Cards)
+├── features/     # Domain-driven feature modules (Auth, Cart, Loans)
+├── hooks/        # Reusable custom React Hooks
+├── layouts/      # High-level layout wrappers (AdminLayout, MainLayout)
+├── lib/          # API configurations, stores, and utility functions
+├── pages/        # Route-level components mapped to specific URLs
+└── router.tsx    # Centralized application
 
-## 🚀 Getting Started (Local Development)
+🔗 API Integration
+The frontend client consumes a robust RESTful API developed by Henry Rivardo.
+Explore the complete endpoints and payloads via the interactive Swagger interface:
 
-Ikuti instruksi berikut untuk melakukan _setup environment_ dan menjalankan aplikasi di mesin lokal Anda:
+👉 Booky REST API - Swagger UI
 
-### Prerequisites
+🚀 Local Development Guide
+To run this project locally, follow these steps:
 
-- Node.js (v18.x atau terbaru)
-- npm, yarn, atau pnpm
+Prerequisites
+Node.js (v18.x or later recommended)
+Package manager (npm, yarn, or pnpm)
+git clone [https://github.com/afrizal090477-max/library-web-mvp.git](https://github.com/afrizal090477-max/library-web-mvp.git)
+cd library-web-mvp
+npm install
 
-### Installation Steps
+VITE_API_URL=[https://library-backend-production-b9cf.up.railway.app/api](https://library-backend-production-b9cf.up.railway.app/api)
 
-1. **Clone the repository:**
+npm run dev
+The application will be available at http://localhost:5173
 
-   ```bash
-   git clone [https://github.com/afrizal090477-max/library-web-mvp](https://github.com/afrizal090477-max/library-web-mvp)
+🌐 Deployment & CI/CD
+This application is configured for Continuous Integration and Continuous Deployment (CI/CD) via Vercel. Every push to the main branch automatically triggers a new production build, ensuring high availability and low latency via Vercel's Global Edge Network.
 
-   ```
-
-2. cd library-web-mvp
-
-3. npm install
-
-   # or
-
-   yarn install
-
-4. npm run dev
-5. Access the application:
-   Buka http://localhost:5173 di browser pilihan Anda.
-
-🌐 Deployment
-Aplikasi ini telah dikonfigurasi untuk Continuous Integration/Continuous Deployment (CI/CD) dan di-host menggunakan infrastruktur Vercel untuk menjamin ketersediaan tinggi (high availability) dan latensi rendah melalui Global Edge Network.
-
-© 2026 Booky Digital Library. Developed with Clean Code and Agile Craftsmanship.
+Booky Digital Library © 2026.
+Developed with Clean Code and Agile Craftsmanship.

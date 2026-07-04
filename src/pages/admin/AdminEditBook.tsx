@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { ArrowLeft, UploadCloud, X, ImageIcon, Trash2 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { BASE_URL } from "@/lib/api"; // 🚀 Import BASE_URL di sini
+import { BASE_URL } from "@/lib/api"; 
 
 interface Author { id: number; name: string; }
 interface Category { id: number; name: string; }
@@ -138,7 +138,6 @@ export function AdminEditBook() {
         if (existingAuthor) {
           finalAuthorId = existingAuthor.id;
         } else {
-          // 🚀 PERBAIKAN: Tembak URL dengan BASE_URL
           const createAuthRes = await fetch(`${BASE_URL}/authors`, {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },

@@ -5,14 +5,14 @@ import { BASE_URL } from "@/lib/api";
 
 export interface LoanItem {
   id: number;
-  status: string; // "BORROWED" atau "RETURNED"
+  status: string;
   displayStatus?: string;
-  borrowedAt?: string; // Sesuai respons API
+  borrowedAt?: string; 
   borrowDate?: string; 
-  dueAt?: string;      // Sesuai respons API
+  dueAt?: string;     
   dueDate?: string; 
-  durationDays?: number; // Sesuai respons API
-  borrower?: { name: string }; // Sesuai respons API
+  durationDays?: number; 
+  borrower?: { name: string }; 
   user?: { name: string };
   User?: { name: string }; 
   book?: {
@@ -35,8 +35,7 @@ export function AdminLoanList() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  
-  const [activeFilter, setActiveFilter] = useState("Active"); // Default ke tab Active biar langsung kelihatan yang lagi dipinjam
+  const [activeFilter, setActiveFilter] = useState("Active"); 
   const filters = ["All", "Active", "Returned", "Overdue"];
 
   useEffect(() => {
@@ -44,16 +43,13 @@ export function AdminLoanList() {
       try {
         setIsLoading(true);
         const token = localStorage.getItem("token");
-        
-        // 🚀 FIX 1: Ubah limit jadi 20 sesuai standar Swagger backend
         const res = await fetch(`${BASE_URL}/admin/loans?status=all&page=1&limit=20`, {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Pastikan spasi setelah Bearer
+            Authorization: `Bearer ${token}`, 
           },
         });
         
-        // 🚀 FIX 2: Tangkap pesan error asli dari backend biar kita tahu masalahnya!
         if (!res.ok) {
           const errJson = await res.json().catch(() => ({}));
           throw new Error(errJson.message || `Error Server: ${res.status}`);
@@ -69,7 +65,6 @@ export function AdminLoanList() {
         setIsLoading(false);
       }
     };
-
     fetchLoans();
   }, []);
 
@@ -92,10 +87,9 @@ export function AdminLoanList() {
     return Math.round((end - start) / (1000 * 60 * 60 * 24));
   };
 
-  // 🚀 ACTION FIX: LOGIC FILTER KAPITAL DAN SINKRONISASI FIELD API
   const filteredLoans = loans.filter((loan) => {
     const bookData = loan.book || loan.Book;
-    const userData = loan.borrower || loan.user || loan.User; // Sesuaikan dengan API
+    const userData = loan.borrower || loan.user || loan.User; 
     
     const titleMatch = bookData?.title?.toLowerCase().includes(search.toLowerCase()) || false;
     const userMatch = userData?.name?.toLowerCase().includes(search.toLowerCase()) || false;
@@ -188,17 +182,14 @@ export function AdminLoanList() {
             const isReturned = loan.status?.toUpperCase() === "RETURNED";
             const dueDateObj = new Date(loan.dueAt || loan.dueDate || "");
             const isOverdue = loan.status?.toUpperCase() === "BORROWED" && new Date() > dueDateObj;
-            
-            // Logika pewarnaan status yang lebih akurat
             let displayStatus = loan.status;
-            let statusColor = "text-[#079455]"; // Default hijau (Active)
-            
+            let statusColor = "text-[#079455]"; 
             if (isReturned) {
               displayStatus = "RETURNED";
-              statusColor = "text-[#535862]"; // Abu-abu
+              statusColor = "text-[#535862]"; 
             } else if (isOverdue) {
               displayStatus = "OVERDUE";
-              statusColor = "text-[#EE1D52]"; // Merah
+              statusColor = "text-[#EE1D52]"; 
             }
 
             return (

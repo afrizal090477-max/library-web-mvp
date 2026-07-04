@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Camera, Save, X, User } from "lucide-react";
-import { BASE_URL } from "@/lib/api"; // 🚀 Import BASE_URL langsung dari api.ts
+import { BASE_URL } from "@/lib/api"; 
 
 export function AdminProfile() {
   const fileInputRef = useRef<HTMLInputElement>(null);

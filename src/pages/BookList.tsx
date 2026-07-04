@@ -24,12 +24,8 @@ const RATINGS = [5, 4, 3, 2, 1];
 export default function BookList() {
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('q') || undefined;
-  
-  // State untuk filter yang aktif
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
-
-  // Fungsi toggle category
   const handleCategoryToggle = (category: string) => {
     setSelectedCategories((prev) => 
       prev.includes(category) 
@@ -38,10 +34,8 @@ export default function BookList() {
     );
   };
 
-  // PERBAIKAN: Diubah dari Function Component () => () menjadi Variabel JSX ( )
   const filterContent = (
     <>
-      {/* Categories Section */}
       <div className="flex flex-col items-start px-[16px] gap-[10px] w-full">
         <h3 className="hidden md:block w-full font-bold text-[16px] leading-[30px] text-[#0A0D12]">
           Filter
@@ -71,10 +65,7 @@ export default function BookList() {
         </div>
       </div>
 
-      {/* Separator Line */}
       <div className="w-full border-t border-[#D5D7DA] my-2 md:my-0"></div>
-
-      {/* Rating Section */}
       <div className="flex flex-col items-start px-[16px] gap-[10px] w-full pb-[20px] md:pb-0">
         <h4 className="w-full font-bold text-[18px] leading-[32px] tracking-[-0.02em] text-[#0A0D12]">
           Rating
@@ -109,8 +100,6 @@ export default function BookList() {
   return (
     <div className="w-full min-h-screen pt-[100px] md:pt-[128px] pb-[80px] bg-[#FFFFFF] font-['Quicksand'] overflow-x-hidden">
       <div className="mx-auto w-full max-w-[1440px] px-[16px] md:px-[120px] flex flex-col items-start gap-[16px] md:gap-[32px]">
-        
-        {/* Header Title */}
         <div className="w-full">
           <h1 className="font-bold text-[24px] md:text-[36px] leading-[36px] md:leading-[44px] text-[#0A0D12]">
             Book List
@@ -121,8 +110,6 @@ export default function BookList() {
             </p>
           )}
         </div>
-
-        {/* MOBILE FILTER TRIGGER (Dengan Drawer Sheet) */}
         <Sheet>
           <SheetTrigger asChild>
             <button className="md:hidden flex flex-row justify-between items-center p-[12px] w-full bg-[#FFFFFF] shadow-[0px_0px_20px_rgba(203,202,202,0.25)] rounded-[12px] active:scale-[0.99] transition-transform outline-none">
@@ -142,16 +129,10 @@ export default function BookList() {
           </SheetContent>
         </Sheet>
 
-        {/* Main Content Layout (Sidebar + Grid) */}
         <div className="flex flex-col md:flex-row items-start gap-[40px] w-full">
-          
-          {/* SIDEBAR FILTER (Desktop Only) */}
           <div className="hidden md:flex flex-col items-start py-[16px] gap-[24px] w-[266px] bg-[#FFFFFF] shadow-[0px_0px_20px_rgba(203,202,202,0.25)] rounded-[12px] flex-shrink-0">
-            {/* PERBAIKAN: Dipanggil sebagai variabel */}
             {filterContent}
           </div>
-
-          {/* BOOK GRID AREA */}
           <div className="flex-1 w-full min-w-0">
             <BookListSection 
               searchQuery={searchQuery} 

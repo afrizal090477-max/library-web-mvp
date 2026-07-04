@@ -35,8 +35,6 @@ export default function Books() {
 
     fetchBooks();
   }, []);
-
-  // Filter dipindahkan ke sini agar variabelnya terpakai di JSX
   const filteredBooks = books.filter(book =>
     book.title.toLowerCase().includes(query.toLowerCase()) ||
     book.author?.name.toLowerCase().includes(query.toLowerCase())
@@ -61,7 +59,6 @@ export default function Books() {
         </div>
       </div>
 
-      {/* loading dan filteredBooks */}
       {loading ? (
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4 lg:grid-cols-5">
           {Array.from({ length: 10 }).map((_, i) => (
