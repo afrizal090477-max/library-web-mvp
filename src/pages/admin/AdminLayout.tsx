@@ -30,101 +30,122 @@ export default function AdminLayout() {
     dispatch(logout());
     navigate("/login");
   };
+  
   if (!isAdmin) {
     return <Navigate to="/" replace />; 
   }
 
   const navItems = [
-    { name: "Dashboard", path: "/admin/dashboard", icon: DashIcon },
-    { name: "Manage Authors", path: "/admin/authors", icon: PenTool },
-    { name: "Manage Books", path: "/admin/books", icon: BookIcon },
-    { name: "Manage Categories", path: "/admin/categories", icon: Tags },
-    { name: "Manage Users", path: "/admin/users", icon: UsersIcon },
-    { name: "Loan Records", path: "/admin/loans", icon: LoanIcon },
-    { name: "My Profile", path: "/admin/profile", icon: UserIcon },
+    { name: "Dashboard", path: "/admin/dashboard", icon: DashIcon, color: "text-[#1C65DA]" },
+    { name: "Manage Authors", path: "/admin/authors", icon: PenTool, color: "text-purple-600" },
+    { name: "Manage Books", path: "/admin/books", icon: BookIcon, color: "text-indigo-600" },
+    { name: "Manage Categories", path: "/admin/categories", icon: Tags, color: "text-pink-600" },
+    { name: "Manage Users", path: "/admin/users", icon: UsersIcon, color: "text-emerald-600" },
+    { name: "Loan Records", path: "/admin/loans", icon: LoanIcon, color: "text-orange-600" },
+    { name: "My Profile", path: "/admin/profile", icon: UserIcon, color: "text-slate-600" },
   ];
 
   return (
-    <div className="flex min-h-screen bg-[#F9FAFB] overflow-hidden">
-      {isSidebarOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
+    <div className="relative flex min-h-screen overflow-hidden bg-[#F9FAFB]">
+      
+      {/* 🚀 FIX 1: BACKGROUND GAMBAR DITARUH DI LAYOUT (FULL SCREEN) */}
+      <div 
+        className="absolute inset-0 z-0 bg-fixed bg-center bg-no-repeat bg-cover" 
+        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=2000')" }} 
+      />
+      {/* Overlay Global Biar Gambar Gak Terlalu Terang */}
+      <div className="absolute inset-0 z-0 bg-white/40 backdrop-blur-[6px]" />
 
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-[#E5E7EB] flex flex-col transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${
-        isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-      }`}>
-        <div className="h-16 flex items-center justify-between px-6 border-b border-[#E5E7EB] mb-4">
-          <Link to="/admin/dashboard" className="flex items-center gap-2 transition-opacity hover:opacity-80">
-            <div className="flex h-8 w-8 items-center justify-center rounded border border-[#D5D7DA] bg-white p-1 shadow-sm">
-              <img src={Logo} alt="Booky Logo" className="object-contain w-full h-full" />
-            </div>
-            <span className="font-quicksand text-xl font-bold text-[#0A0D12]">Booky Admin</span>
-          </Link>
-          
-          <button className="lg:hidden text-[#6B7280]" onClick={() => setIsSidebarOpen(false)}>
-            <X size={24} />
-          </button>
-        </div>
+      {/* Pembungkus Utama (z-10 agar di atas background) */}
+      <div className="relative z-10 flex w-full h-screen">
+        
+        {/* Sidebar Mobile Overlay */}
+        {isSidebarOpen && (
+          <div 
+            className="fixed inset-0 z-40 bg-black/40 lg:hidden backdrop-blur-sm"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
 
-        <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
-            const isActive = location.pathname.includes(item.path);
-            const Icon = item.icon;
-            
-            return (
-              <Link
-                key={item.name}
-                to={item.path}
-                onClick={() => setIsSidebarOpen(false)} 
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm transition-colors ${
-                  isActive 
-                    ? "bg-[#1C65DA] text-white" 
-                    : "text-[#4B5563] hover:bg-[#F3F4F6] hover:text-[#111827]"
-                }`}
-              >
-                <Icon size={18} className={isActive ? "text-white" : "text-[#6B7280]"} />
-                {item.name}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="p-4 border-t border-[#E5E7EB]">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-[#EE1D52] rounded-lg hover:bg-[#FEF2F2] transition-colors"
-          >
-            <LogoutIcon size={18} />
-            Logout
-          </button>
-        </div>
-      </aside>
-
-      <main className="flex flex-col flex-1 h-screen overflow-hidden">
-        <header className="h-16 flex-shrink-0 bg-white border-b border-[#E5E7EB] flex items-center justify-between lg:justify-end px-4 sm:px-8">
-          <button 
-            className="lg:hidden p-2 text-[#4B5563] hover:bg-[#F3F4F6] rounded-lg"
-            onClick={() => setIsSidebarOpen(true)}
-          >
-            <Menu size={24} />
-          </button>
-
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-bold text-[#374151]">
-              {user ? user.name : "Admin Library"}
-            </span>
-            <div className="w-9 h-9 rounded-full bg-[#E0ECFF] flex items-center justify-center text-[#1C65DA] font-bold uppercase">
-              {user && user.name ? user.name.substring(0, 2) : "AL"}
-            </div>
+        {/* 🚀 FIX 2: SIDEBAR GLASSMORPHISM */}
+        <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white/50 backdrop-blur-lg border-r border-white/60 shadow-[4px_0_24px_rgba(0,0,0,0.02)] flex flex-col transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}>
+          <div className="flex items-center justify-between h-16 px-6 mb-4 border-b border-black/5">
+            <Link to="/admin/dashboard" className="flex items-center gap-2 transition-opacity hover:opacity-80">
+              <div className="flex items-center justify-center w-8 h-8 p-1 border rounded-lg shadow-sm bg-white/80 border-white/60">
+                <img src={Logo} alt="Booky Logo" className="object-contain w-full h-full" />
+              </div>
+              <span className="font-quicksand text-xl font-extrabold text-[#0A0D12] drop-shadow-sm">Booky Admin</span>
+            </Link>
+            <button className="lg:hidden text-[#4B5563]" onClick={() => setIsSidebarOpen(false)}>
+              <X size={24} />
+            </button>
           </div>
-        </header>
-        <div className="flex-1 p-4 overflow-auto sm:p-8">
-          <Outlet />
-        </div>
-      </main>
+
+          <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto">
+            {navItems.map((item) => {
+              const isActive = location.pathname.includes(item.path);
+              const Icon = item.icon;
+              
+              return (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  onClick={() => setIsSidebarOpen(false)} 
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-[14px] transition-all ${
+                    isActive 
+                      ? "bg-[#1C65DA]/90 text-white shadow-md backdrop-blur-md border border-white/20" 
+                      : "text-[#4B5563] hover:bg-white/60 hover:text-[#0A0D12] hover:shadow-sm border border-transparent"
+                  }`}
+                >
+                  <Icon size={18} className={isActive ? "text-white" : item.color} />
+                  {item.name}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="p-4 border-t border-black/5">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-bold text-[#EE1D52] rounded-xl hover:bg-white/60 transition-all border border-transparent hover:border-white/50 hover:shadow-sm"
+            >
+              <LogoutIcon size={18} />
+              Logout
+            </button>
+          </div>
+        </aside>
+
+        {/* Area Konten Utama */}
+        <main className="flex flex-col flex-1 h-screen overflow-hidden">
+          
+          {/* 🚀 FIX 3: NAVBAR GLASSMORPHISM */}
+          <header className="relative z-20 flex items-center justify-between flex-shrink-0 h-16 px-4 border-b shadow-sm bg-white/30 backdrop-blur-md border-white/50 lg:justify-end sm:px-8">
+            <button 
+              className="p-2 rounded-lg lg:hidden text-[#4B5563] hover:bg-white/60 shadow-sm border border-transparent hover:border-white/50"
+              onClick={() => setIsSidebarOpen(true)}
+            >
+              <Menu size={24} />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-bold text-[#374151] drop-shadow-sm">
+                {user ? user.name : "Admin Library"}
+              </span>
+              <div className="w-9 h-9 rounded-full bg-white/80 border border-white/60 shadow-sm flex items-center justify-center text-[#1C65DA] font-bold uppercase backdrop-blur-sm">
+                {user && user.name ? user.name.substring(0, 2) : "AL"}
+              </div>
+            </div>
+          </header>
+          
+          {/* Tempat ngerender halaman (Dashboard, Books, dll) */}
+          <div className="flex-1 p-4 overflow-auto sm:p-8">
+            <Outlet />
+          </div>
+        </main>
+
+      </div>
     </div>
   );
 }
