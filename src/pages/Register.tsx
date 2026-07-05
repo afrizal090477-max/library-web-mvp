@@ -1,9 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { setCredentials } from '@/features/auth/authSlice';
 import { register } from '@/lib/api';
-import { User } from '@/types'; 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,26 +9,18 @@ import Logo from '@/assets/logo-brand.svg';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 
-
-interface RegisterResponse {
-  data?: {
-    user: User;
-    token: string;
-  };
-  user?: User;
-  token?: string;
-}
-
 export default function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState(''); 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const dispatch = useAppDispatch();
+  
   const navigate = useNavigate();
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
@@ -39,18 +28,13 @@ export default function Register() {
       setError("Password dan Konfirmasi Password tidak sama.");
       return;
     }
+    
     setIsLoading(true);
     try {
-      const response = (await register(name, email, password)) as RegisterResponse;    
-      const user = response?.data?.user || response?.user;
-      const token = response?.data?.token || response?.token;
-      if (!user || !token) {
-         throw new Error("Gagal mengambil data user/token dari server.");
-      }
-
-      dispatch(setCredentials({ user, token }));
-      toast.success("Registrasi berhasil! Akun kamu sudah dibuat.");
-      navigate('/');
+      await register(name, email, phone, password);    
+      toast.success("Registrasi berhasil! Silakan login dengan akun baru kamu.");
+      navigate('/login'); 
+      
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -63,7 +47,7 @@ export default function Register() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4 bg-white">
+    <div className="flex items-center justify-center min-h-screen p-4 bg-white font-quicksand">
       <div className="w-full max-w-[400px]">
         <div className="mb-8 flex items-center gap-[11.79px]">
           <div className="flex h-[33px] w-[33px] items-center justify-center rounded-[6px] border border-[#D5D7DA] bg-white p-1 shadow-sm">
@@ -83,13 +67,14 @@ export default function Register() {
             <CardTitle className="text-[28px] font-bold tracking-[-0.02em] text-[#0A0D12]">
               Register
             </CardTitle>
-            <CardDescription className="text-base text-[#414651]">
+            <CardDescription className="text-base text-[#414651] font-medium">
               Create your account to start using Booky.
             </CardDescription>
           </CardHeader>
 
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
+              
               <div className="space-y-1.5">
                 <Label htmlFor="name" className="text-sm font-bold text-[#0A0D12]">
                   Full Name
@@ -100,7 +85,7 @@ export default function Register() {
                   placeholder="John Doe"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="h-12 rounded-[12px] border-[#D5D7DA] px-4"
+                  className="h-12 rounded-[12px] border-[#D5D7DA] px-4 font-medium"
                   required
                   disabled={isLoading}
                 />
@@ -116,7 +101,23 @@ export default function Register() {
                   placeholder="youremail@domain.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-12 rounded-[12px] border-[#D5D7DA] px-4"
+                  className="h-12 rounded-[12px] border-[#D5D7DA] px-4 font-medium"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="phone" className="text-sm font-bold text-[#0A0D12]">
+                  Nomor Handphone
+                </Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="081234567890"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="h-12 rounded-[12px] border-[#D5D7DA] px-4 font-medium"
                   required
                   disabled={isLoading}
                 />
@@ -133,7 +134,7 @@ export default function Register() {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="h-12 rounded-[12px] border-[#D5D7DA] px-4 pr-11"
+                    className="h-12 rounded-[12px] border-[#D5D7DA] px-4 pr-11 font-medium tracking-widest"
                     required
                     disabled={isLoading}
                   />
@@ -157,28 +158,34 @@ export default function Register() {
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="h-12 rounded-[12px] border-[#D5D7DA] px-4"
+                  className="h-12 rounded-[12px] border-[#D5D7DA] px-4 font-medium tracking-widest"
                   required
                   disabled={isLoading}
                 />
               </div>
+              
               {error && (
-                <p className="text-sm font-medium text-[#EE1D52]">{error}</p>
+                <p className="text-[13px] font-bold text-[#EE1D52] bg-[#FEE4E2]/50 p-2.5 rounded-lg border border-[#FEE4E2]">
+                  {error}
+                </p>
               )}
+
               <Button
                 type="submit"
-                className="h-12 w-full rounded-full bg-[#1C65DA] text-base font-bold hover:bg-[#1C65DA]/90"
+                className="h-12 w-full rounded-full bg-[#1C65DA] text-base font-bold hover:bg-[#1C65DA]/90 transition-all shadow-sm"
                 disabled={isLoading}
               >
                 {isLoading ? "Creating Account..." : "Register"}
               </Button>
             </form>
-            <div className="mt-6 text-sm text-center">
+            
+            <div className="mt-6 text-sm font-medium text-center">
               <span className="text-[#6B7280]">Already have an account? </span>
-              <Link to="/login" className="font-bold text-[#1C65DA] hover:underline">
+              <Link to="/login" className="font-extrabold text-[#1C65DA] hover:underline">
                 Login
               </Link>
             </div>
+            
           </CardContent>
         </Card>
       </div>

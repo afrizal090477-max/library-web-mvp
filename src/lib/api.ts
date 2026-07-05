@@ -35,15 +35,17 @@ export const login = async (email: string, password: string) => {
   return result.data;
 };
 
+
 export const register = async (
   name: string,
   email: string,
+  phone: string, 
   password: string,
 ) => {
   const res = await fetch(`${BASE_URL}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, email, password }),
+    body: JSON.stringify({ name, email, phone, password }), 
   });
   return handleResponse(res);
 };
