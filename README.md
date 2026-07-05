@@ -8,11 +8,12 @@
 
 **Booky** is a modern, scalable, and intuitive digital library management platform. Designed with an enterprise-grade architecture, it delivers a seamless experience for both library patrons and administrators through a high-performance User Interface and a comprehensive Management Backoffice.
 
-**[View Live Demo](https://library-web-mvp-tau.vercel.app/)** • **[API Documentation](https://library-backend-production-b9cf.up.railway.app/api-swagger/#/)**
+**[View Live Demo](https://library-web-mvp-tau.vercel.app/)** 
+**[API Documentation](https://library-backend-production-b9cf.up.railway.app/api-swagger/#/)**
 
 ---
 
-## 🏗️ System Architecture
+🏗️ System Architecture
 
 The application implements a decoupled architecture, separating the client-side presentation layer from the backend API services.
 

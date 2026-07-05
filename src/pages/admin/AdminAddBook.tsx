@@ -5,6 +5,9 @@ import { Link, useNavigate } from "react-router-dom";
 interface Author { id: number; name: string; }
 interface Category { id: number; name: string; }
 
+// 🚀 FIX: Tambahkan konstanta Base URL Backend Henry biar gampang dipanggil
+const API_BASE_URL = "https://library-backend-production-b9cf.up.railway.app";
+
 export function AdminAddBook() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -32,8 +35,8 @@ export function AdminAddBook() {
         const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
         const [authRes, catRes] = await Promise.all([
-          fetch("/api/authors", { headers }),
-          fetch("/api/categories", { headers })
+          fetch(`${API_BASE_URL}/api/authors`, { headers }),
+          fetch(`${API_BASE_URL}/api/categories`, { headers })
         ]);
         if (authRes.ok) {
           const authData = await authRes.json();
@@ -67,7 +70,6 @@ export function AdminAddBook() {
     reader.onloadend = () => {
       const img = new Image();
       img.src = reader.result as string;
-      
       img.onload = () => {
         const canvas = document.createElement("canvas");
         const MAX_WIDTH = 400; 
@@ -103,7 +105,7 @@ export function AdminAddBook() {
         if (existingAuthor) {
           finalAuthorId = existingAuthor.id;
         } else {
-          const createAuthRes = await fetch("/api/authors", {
+          const createAuthRes = await fetch(`${API_BASE_URL}/api/authors`, {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             body: JSON.stringify({ 
@@ -137,7 +139,7 @@ export function AdminAddBook() {
         totalPages: Number(formData.pages) || 0
       };
 
-      const res = await fetch("/api/books", {
+      const res = await fetch(`${API_BASE_URL}/api/books`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),
@@ -152,7 +154,6 @@ export function AdminAddBook() {
       setFormData({ title: "", categoryId: "", pages: "", description: "", coverImage: "" });
       setAuthorSearch("");
       setSelectedAuthorId(null);
-
       setTimeout(() => {
         navigate("/admin/books");
       }, 2000);
