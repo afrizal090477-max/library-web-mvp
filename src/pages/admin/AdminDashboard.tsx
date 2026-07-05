@@ -80,16 +80,12 @@ export function AdminDashboard() {
   const overdueList: OverdueLoan[] = overviewData?.overdueLoansList || overviewData?.loans?.overdueList || [];
 
   return (
-    // 🚀 FIX: Udah bersih dari kodingan background dobel. Tinggal fokus ke kontennya aja!
     <div className="relative z-10 pb-10 space-y-6 font-quicksand">
-      
-      {/* Title */}
       <div>
         <h1 className="text-[24px] font-extrabold text-[#0A0D12] drop-shadow-sm">Dashboard Overview</h1>
         <p className="text-[#4B5563] text-[15px] font-medium drop-shadow-sm">Ringkasan data perpustakaan hari ini.</p>
       </div>
       
-      {/* HERO BANNER GLASSMORPHISM */}
       <div className="relative overflow-hidden rounded-3xl p-6 md:p-8 bg-white/50 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)] backdrop-blur-md flex flex-col sm:flex-row items-center gap-5">
         <div className="relative z-10 flex items-center justify-center flex-shrink-0 w-16 h-16 p-3 border shadow-md rounded-2xl bg-white/90 border-white/60">
           <img src={Logo} alt="Booky Logo" className="object-contain w-full h-full" />
@@ -108,7 +104,6 @@ export function AdminDashboard() {
         </div>
       </div>
       
-      {/* SECTION 1: 4 CARD STATISTIK */}
       <div className="grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-4">
         <div className="p-6 bg-white/60 border border-white/60 backdrop-blur-lg rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.04)] flex items-center gap-4 transition-all hover:-translate-y-1 hover:bg-white/80">
           <div className="w-12 h-12 bg-[#E0ECFF]/90 text-[#1C65DA] shadow-inner rounded-full flex items-center justify-center flex-shrink-0">
@@ -151,10 +146,8 @@ export function AdminDashboard() {
         </div>
       </div>
 
-      {/* SECTION 2: 2-COLUMN LAYOUT DATA GRID */}
       <div className="grid grid-cols-1 gap-6 pt-2 lg:grid-cols-3">
         
-        {/* TABEL PERINGATAN */}
         <div className="lg:col-span-2 bg-white/60 border border-white/60 backdrop-blur-lg rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.05)] p-5 md:p-6 flex flex-col h-full min-h-[350px]">
           <div className="flex items-center justify-between pb-4 mb-5 border-b border-black/5">
             <h2 className="text-[18px] font-extrabold text-[#0A0D12] flex items-center gap-2">
@@ -201,7 +194,6 @@ export function AdminDashboard() {
           </div>
         </div>
 
-        {/* BUKU TERPOPULER */}
         <div className="lg:col-span-1 bg-white/60 border border-white/60 backdrop-blur-lg rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.05)] p-5 md:p-6 flex flex-col h-full min-h-[350px]">
           <div className="flex items-center justify-between pb-4 mb-5 border-b border-black/5">
             <h2 className="text-[18px] font-extrabold text-[#0A0D12] flex items-center gap-2">

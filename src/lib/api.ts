@@ -8,7 +8,7 @@ import {
   Review,
 } from "@/types";
 
-// 🚀 INI DIA KATA KUNCINYA: "export" biar bisa dipinjem file lain!
+
 export const BASE_URL = "https://library-backend-production-b9cf.up.railway.app/api";
 
 const handleResponse = async <T>(res: Response): Promise<T> => {
@@ -177,16 +177,20 @@ export const getAdminOverview = async (
   return result.data;
 };
 
-// 🚀 Fungsi Admin Users yang kita bikin tadi juga udah masuk di sini
-export const getAdminUsers = async (token?: string) => {
-  const authToken = token || localStorage.getItem("token");
-  
-  const res = await fetch(`${BASE_URL}/admin/users`, {
+export const getAdminUsers = async (page = 1, limit = 10, search = "") => {
+  const authToken = localStorage.getItem("token");
+  const queryParams = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
+  if (search) {
+    queryParams.append("q", search);
+  }
+  const res = await fetch(`${BASE_URL}/admin/users?${queryParams.toString()}`, {
     headers: {
       "Content-Type": "application/json",
       ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
     },
   });
-  
   return handleResponse(res);
 };

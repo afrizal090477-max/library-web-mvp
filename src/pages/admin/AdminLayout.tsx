@@ -47,19 +47,12 @@ export default function AdminLayout() {
 
   return (
     <div className="relative flex min-h-screen overflow-hidden bg-[#F9FAFB]">
-      
-      {/* 🚀 FIX 1: BACKGROUND GAMBAR DITARUH DI LAYOUT (FULL SCREEN) */}
       <div 
         className="absolute inset-0 z-0 bg-fixed bg-center bg-no-repeat bg-cover" 
         style={{ backgroundImage: "url('https://images.unsplash.com/photo-1521587760476-6c12a4b040da?q=80&w=2000')" }} 
       />
-      {/* Overlay Global Biar Gambar Gak Terlalu Terang */}
       <div className="absolute inset-0 z-0 bg-white/40 backdrop-blur-[6px]" />
-
-      {/* Pembungkus Utama (z-10 agar di atas background) */}
       <div className="relative z-10 flex w-full h-screen">
-        
-        {/* Sidebar Mobile Overlay */}
         {isSidebarOpen && (
           <div 
             className="fixed inset-0 z-40 bg-black/40 lg:hidden backdrop-blur-sm"
@@ -67,7 +60,6 @@ export default function AdminLayout() {
           />
         )}
 
-        {/* 🚀 FIX 2: SIDEBAR GLASSMORPHISM */}
         <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white/50 backdrop-blur-lg border-r border-white/60 shadow-[4px_0_24px_rgba(0,0,0,0.02)] flex flex-col transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}>
@@ -117,10 +109,7 @@ export default function AdminLayout() {
           </div>
         </aside>
 
-        {/* Area Konten Utama */}
         <main className="flex flex-col flex-1 h-screen overflow-hidden">
-          
-          {/* 🚀 FIX 3: NAVBAR GLASSMORPHISM */}
           <header className="relative z-20 flex items-center justify-between flex-shrink-0 h-16 px-4 border-b shadow-sm bg-white/30 backdrop-blur-md border-white/50 lg:justify-end sm:px-8">
             <button 
               className="p-2 rounded-lg lg:hidden text-[#4B5563] hover:bg-white/60 shadow-sm border border-transparent hover:border-white/50"
@@ -139,7 +128,6 @@ export default function AdminLayout() {
             </div>
           </header>
           
-          {/* Tempat ngerender halaman (Dashboard, Books, dll) */}
           <div className="flex-1 p-4 overflow-auto sm:p-8">
             <Outlet />
           </div>

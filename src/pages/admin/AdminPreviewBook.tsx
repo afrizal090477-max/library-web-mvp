@@ -27,8 +27,6 @@ export function AdminPreviewBook() {
       try {
         setIsLoading(true);
         const token = localStorage.getItem("token");
-        
-        // 🚀 PERBAIKAN: Gunakan BASE_URL untuk mengambil detail buku
         const res = await fetch(`${BASE_URL}/books/${id}`, {
           headers: {
             "Content-Type": "application/json",

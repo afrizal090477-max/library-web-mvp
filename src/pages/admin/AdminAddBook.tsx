@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { ArrowLeft, UploadCloud, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-
 interface Author { id: number; name: string; }
 interface Category { id: number; name: string; }
 
-// 🚀 FIX: Tambahkan konstanta Base URL Backend Henry biar gampang dipanggil
+
 const API_BASE_URL = "https://library-backend-production-b9cf.up.railway.app";
 
 export function AdminAddBook() {
