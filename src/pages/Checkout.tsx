@@ -4,13 +4,18 @@ import { Check, Calendar, ArrowLeft } from 'lucide-react';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
 import { clearCart } from '@/features/cart/cartSlice';
+import { useMutation, useQueryClient } from '@tanstack/react-query'; // 🚀 Import TanStack Query
+import { toast } from 'sonner'; // 🚀 Import Toast
 
 export default function Checkout() {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const queryClient = useQueryClient(); // 🚀 Setup buat update cache
+  
   const { user } = useAppSelector((state) => state.auth);
   const cartItems = useAppSelector((state) => state.cart?.items || []);
+  const token = localStorage.getItem('token'); // Ambil token
 
   const selectedIds: Array<string | number> = location.state?.selectedIds || [];
   const checkoutItems = cartItems.filter(item => selectedIds.includes(item.id));
@@ -18,22 +23,62 @@ export default function Checkout() {
   const [duration, setDuration] = useState<number>(3); 
   const [agree1, setAgree1] = useState(false);
   const [agree2, setAgree2] = useState(false);
+  
   const returnDateString = useMemo(() => {
     const date = new Date();
     date.setDate(date.getDate() + duration);
     return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   }, [duration]);
 
+  // 🚀 MUTATION BUAT CHECKOUT API
+  const checkoutMutation = useMutation({
+    mutationFn: async (items: typeof checkoutItems) => {
+      // Nembak API Pinjam Buku secara paralel untuk semua buku di keranjang
+      const promises = items.map(item =>
+        fetch(`https://library-backend-production-b9cf.up.railway.app/api/loans`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ bookId: item.id }),
+        }).then(async (res) => {
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.message || `Gagal meminjam buku: ${item.title}`);
+          }
+          return res.json();
+        })
+      );
+      return Promise.all(promises);
+    },
+    onSuccess: () => {
+      dispatch(clearCart()); // Bersihin keranjang kalau sukses
+      queryClient.invalidateQueries({ queryKey: ['all-books'] }); // 🚀 Refresh stok buku di background
+      queryClient.invalidateQueries({ queryKey: ['relatedBooks'] }); 
+      toast.success('Checkout berhasil! Buku masuk ke My Loans.');
+      navigate('/success'); 
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : 'Terjadi kesalahan saat checkout.');
+    }
+  });
+
   const handleBorrow = () => {
     if (!agree1 || !agree2) return;
-    dispatch(clearCart()); 
-    navigate('/success'); 
+    if (!token) {
+      toast.error('Sesi telah habis, silakan login kembali.');
+      navigate('/login');
+      return;
+    }
+    // Eksekusi API
+    checkoutMutation.mutate(checkoutItems);
   };
 
   if (checkoutItems.length === 0) {
     return (
       <div className="min-h-screen pt-[120px] flex justify-center">
-        <Link to="/cart" className="flex items-center gap-2 font-bold text-blue-600 hover:text-blue-800">
+        <Link to="/cart" className="flex items-center gap-2 font-bold text-[#1C65DA] hover:text-blue-800 transition-colors">
           <ArrowLeft/> Kembali ke Cart
         </Link>
       </div>
@@ -55,15 +100,15 @@ export default function Checkout() {
               <h2 className="font-bold text-[18px] md:text-[24px] text-[#0A0D12]">User Information</h2>
               <div className="flex flex-row items-center justify-between">
                 <span className="font-medium text-[14px] md:text-[16px] text-[#0A0D12]">Name</span>
-                <span className="font-bold text-[14px] md:text-[16px] text-[#0A0D12]">{user?.name || "John Doe"}</span>
+                <span className="font-bold text-[14px] md:text-[16px] text-[#0A0D12]">{user?.name || "Member"}</span>
               </div>
               <div className="flex flex-row items-center justify-between">
                 <span className="font-medium text-[14px] md:text-[16px] text-[#0A0D12]">Email</span>
-                <span className="font-bold text-[14px] md:text-[16px] text-[#0A0D12]">{user?.email || "johndoe@email.com"}</span>
+                <span className="font-bold text-[14px] md:text-[16px] text-[#0A0D12]">{user?.email || "-"}</span>
               </div>
               <div className="flex flex-row items-center justify-between">
                 <span className="font-medium text-[14px] md:text-[16px] text-[#0A0D12]">Nomor Handphone</span>
-                <span className="font-bold text-[14px] md:text-[16px] text-[#0A0D12]">{"081234567890"}</span>
+                <span className="font-bold text-[14px] md:text-[16px] text-[#0A0D12]">{user?.phone || "-"}</span>
               </div>
             </div>
 
@@ -157,10 +202,12 @@ export default function Checkout() {
 
             <button 
               onClick={handleBorrow} 
-              disabled={!agree1 || !agree2}
+              disabled={!agree1 || !agree2 || checkoutMutation.isPending}
               className="w-full h-[48px] bg-[#1C65DA] rounded-[100px] flex justify-center items-center hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-2"
             >
-              <span className="font-bold text-[16px] text-white">Borrow</span>
+              <span className="font-bold text-[16px] text-white">
+                {checkoutMutation.isPending ? 'Processing...' : 'Borrow'}
+              </span>
             </button>
           </div>
           

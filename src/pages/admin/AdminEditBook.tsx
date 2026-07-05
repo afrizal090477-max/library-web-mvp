@@ -1,86 +1,107 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { ArrowLeft, UploadCloud, X, ImageIcon, Trash2 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { BASE_URL } from "@/lib/api"; 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-interface Author { id: number; name: string; }
-interface Category { id: number; name: string; }
+interface Author { 
+  id: number; 
+  name: string; 
+}
+
+interface Category { 
+  id: number; 
+  name: string; 
+}
+
+interface BookDetail {
+  title?: string;
+  isbn?: string;
+  categoryId?: string | number;
+  category?: { id: number | string };
+  totalPages?: number;
+  description?: string;
+  coverImage?: string;
+  author?: { id: number; name: string };
+}
+
+interface AdminOptions {
+  authors: Author[];
+  categories: Category[];
+}
+
+interface AdminEditBookFormProps {
+  book: BookDetail;
+  options: AdminOptions;
+  id: string;
+  token: string;
+}
 
 export function AdminEditBook() {
-  const navigate = useNavigate();
   const { id } = useParams();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  const [formData, setFormData] = useState({
-    title: "",
-    isbn: "", 
-    categoryId: "",
-    pages: "",
-    description: "",
-    coverImage: "", 
+  const token = localStorage.getItem("token");
+  const { data: options, isLoading: isOptionsLoading } = useQuery<AdminOptions>({
+    queryKey: ["admin-options"],
+    queryFn: async () => {
+      const headers = { Authorization: `Bearer ${token}` };
+      const [authRes, catRes] = await Promise.all([
+        fetch(`${BASE_URL}/authors`, { headers }),
+        fetch(`${BASE_URL}/categories`, { headers })
+      ]);
+      const authData = authRes.ok ? await authRes.json() : { data: { authors: [] } };
+      const catData = catRes.ok ? await catRes.json() : { data: { categories: [] } };
+      return {
+        authors: (authData.data?.authors as Author[]) || [],
+        categories: (catData.data?.categories as Category[]) || []
+      };
+    },
+    enabled: !!token,
   });
 
-  const [authorSearch, setAuthorSearch] = useState("");
-  const [selectedAuthorId, setSelectedAuthorId] = useState<number | null>(null);
-  const [showAuthorDropdown, setShowAuthorDropdown] = useState(false);
+  const { data: book, isLoading: isBookLoading } = useQuery<BookDetail>({
+    queryKey: ["admin-book-detail", id],
+    queryFn: async () => {
+      const res = await fetch(`${BASE_URL}/books/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error("Gagal mengambil data buku");
+      const json = await res.json();
+      return json.data?.book || json.data;
+    },
+    enabled: !!id && !!token,
+  });
 
-  const [authors, setAuthors] = useState<Author[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  
-  const [isFetchingData, setIsFetchingData] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
+  if (isBookLoading || isOptionsLoading) {
+    return <div className="p-12 text-center text-[#535862] font-quicksand animate-pulse">Menyiapkan data buku...</div>;
+  }
+
+  if (!book || !options) {
+    return <div className="p-12 text-center text-[#EE1D52] font-quicksand font-bold">Buku tidak ditemukan.</div>;
+  }
+
+  return <AdminEditBookForm book={book} options={options} id={id as string} token={token as string} />;
+}
+
+function AdminEditBookForm({ book, options, id, token }: AdminEditBookFormProps) {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [formData, setFormData] = useState({
+    title: book.title || "",
+    isbn: book.isbn || "", 
+    categoryId: book.category?.id?.toString() || book.categoryId?.toString() || "",
+    pages: book.totalPages?.toString() || "",
+    description: book.description || "",
+    coverImage: book.coverImage || "",
+  });
+
+  const [authorSearch, setAuthorSearch] = useState(book.author?.name || "");
+  const [selectedAuthorId, setSelectedAuthorId] = useState<number | null>(book.author?.id || null);
+  const [showAuthorDropdown, setShowAuthorDropdown] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsFetchingData(true);
-        const token = localStorage.getItem("token");
-        const headers = { Authorization: `Bearer ${token}` };
-        
-        // 🚀 PERBAIKAN: Tembak URL dengan BASE_URL
-        const [authRes, catRes, bookRes] = await Promise.all([
-          fetch(`${BASE_URL}/authors`, { headers }),
-          fetch(`${BASE_URL}/categories`, { headers }),
-          fetch(`${BASE_URL}/books/${id}`, { headers })
-        ]);
-        if (authRes.ok) {
-          const authData = await authRes.json();
-          setAuthors(authData.data?.authors || []);
-        }
-        if (catRes.ok) {
-          const catData = await catRes.json();
-          setCategories(catData.data?.categories || []);
-        }
-        if (bookRes.ok) {
-          const bookData = await bookRes.json();
-          const book = bookData.data?.book || bookData.data; 
-          
-          setFormData({
-            title: book.title || "",
-            isbn: book.isbn || "", 
-            categoryId: book.category?.id?.toString() || book.categoryId?.toString() || "",
-            pages: book.totalPages?.toString() || "",
-            description: book.description || "",
-            coverImage: book.coverImage || "",
-          });
-          if (book.author) {
-            setAuthorSearch(book.author.name);
-            setSelectedAuthorId(book.author.id);
-          }
-        } else {
-          throw new Error("Gagal mengambil data buku");
-        }
-      } catch (err) {
-        console.error(err);
-        setError("Gagal memuat data buku. Pastikan ID benar.");
-      } finally {
-        setIsFetchingData(false);
-      }
-    };
-    if (id) fetchData();
-  }, [id]);
+  const authors = options.authors;
+  const categories = options.categories;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -120,14 +141,8 @@ export function AdminEditBook() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-    setShowToast(false);
-
-    try {
-      const token = localStorage.getItem("token");
+  const updateMutation = useMutation({
+    mutationFn: async () => {
       let finalAuthorId = selectedAuthorId;
 
       if (!finalAuthorId && authorSearch.trim() !== "") {
@@ -146,9 +161,7 @@ export function AdminEditBook() {
               bio: "Author ditambahkan otomatis dari sistem" 
             })
           });
-          
           if (!createAuthRes.ok) throw new Error("Gagal membuat data Author baru di server");
-          
           const newAuthData = await createAuthRes.json();
           finalAuthorId = newAuthData.data?.author?.id || newAuthData.data?.id;
         }
@@ -166,7 +179,6 @@ export function AdminEditBook() {
         totalPages: Number(formData.pages) || 0
       };
 
-      // 🚀 PERBAIKAN: Tembak URL dengan BASE_URL
       const res = await fetch(`${BASE_URL}/books/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -177,30 +189,35 @@ export function AdminEditBook() {
         const errJson = await res.json();
         throw new Error(errJson.message || "Gagal mengupdate buku");
       }
-
+      return res.json();
+    },
+    onSuccess: () => {
       setShowToast(true);
+      queryClient.invalidateQueries({ queryKey: ["admin-books"] });
+      queryClient.invalidateQueries({ queryKey: ["all-books"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-book-detail", String(id)] });
+      queryClient.invalidateQueries({ queryKey: ["book-detail", String(id)] });
 
       setTimeout(() => {
         navigate("/admin/books");
       }, 2000);
-
-    } catch (err: unknown) {
-      if (err instanceof Error) setError(err.message);
-      else setError("Terjadi kesalahan sistem");
-    } finally {
-      setIsLoading(false);
+    },
+    onError: (err: Error) => {
+      setError(err.message || "Terjadi kesalahan sistem");
     }
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setShowToast(false);
+    updateMutation.mutate();
   };
 
   const filteredAuthors = authors.filter(a => a.name.toLowerCase().includes(authorSearch.toLowerCase()));
 
-  if (isFetchingData) {
-    return <div className="p-12 text-center text-[#535862] font-quicksand animate-pulse">Menyiapkan data buku...</div>;
-  }
-
   return (
     <div className="max-w-[529px] mx-auto space-y-6 pb-12 relative pt-8 sm:pt-4">
-      
       {showToast && (
         <div className="fixed top-[68px] sm:top-[116px] left-1/2 -translate-x-1/2 w-[345px] sm:w-[291px] h-10 bg-[#079455] rounded-lg flex items-center justify-between px-3 z-50 shadow-lg animate-in fade-in slide-in-from-top-5">
           <span className="text-sm font-semibold text-white font-quicksand tracking-[-0.02em]">Buku berhasil diupdate!</span>
@@ -226,7 +243,6 @@ export function AdminEditBook() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        
         <div className="space-y-0.5">
           <label className="block text-sm font-bold text-[#0A0D12] font-quicksand tracking-[-0.02em]">Title</label>
           <input 
@@ -323,9 +339,7 @@ export function AdminEditBook() {
 
         <div className="space-y-0.5">
           <label className="block text-sm font-bold text-[#0A0D12] font-quicksand tracking-[-0.02em]">Cover Image</label>
-          
           <div className="w-full border border-dashed border-[#D5D7DA] rounded-xl p-4 sm:p-6 bg-white flex flex-col items-center justify-center min-h-[144px]">
-            
             <input 
               type="file" 
               accept="image/*"
@@ -341,7 +355,6 @@ export function AdminEditBook() {
                   alt="Cover Preview" 
                   className="w-[92px] h-[138px] object-cover rounded shadow-sm border border-[#D5D7DA]" 
                 />
-                
                 <div className="flex items-center gap-3 mt-1">
                   <button 
                     type="button"
@@ -360,7 +373,6 @@ export function AdminEditBook() {
                     <span className="text-sm font-medium text-[#D9206E] font-quicksand">Delete Image</span>
                   </button>
                 </div>
-                
                 <span className="text-sm font-medium text-[#0A0D12] font-quicksand tracking-[-0.03em] mt-1">
                   PNG or JPG (max. 5mb)
                 </span>
@@ -388,13 +400,12 @@ export function AdminEditBook() {
         <div className="pt-2">
           <button 
             type="submit"
-            disabled={isLoading}
+            disabled={updateMutation.isPending}
             className="w-full h-12 bg-[#1C65DA] rounded-full flex justify-center items-center gap-2 text-base font-bold text-white font-quicksand tracking-[-0.02em] hover:bg-[#1C65DA]/90 transition-colors disabled:opacity-70 shadow-md"
           >
-            {isLoading ? "Saving..." : "Save"}
+            {updateMutation.isPending ? "Saving..." : "Save"}
           </button>
         </div>
-
       </form>
     </div>
   );

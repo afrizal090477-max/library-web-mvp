@@ -196,3 +196,11 @@ export const getAdminUsers = async (page = 1, limit = 10, search = "") => {
   });
   return handleResponse(res);
 };
+
+
+export const fetchCategories = async () => {
+  const res = await fetch('https://library-backend-production-b9cf.up.railway.app/api/categories');
+  if (!res.ok) throw new Error('Gagal memuat kategori');
+  const json = await res.json();
+  return Array.isArray(json.data) ? json.data : json.data?.categories || [];
+};

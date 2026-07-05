@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'; 
 import { getBookById, getBooksByCategory } from '@/lib/api';
 import { BookDetail as BookDetailType, Book } from '@/types';
 import { BookInfo } from '@/components/book/BookInfo';
@@ -15,36 +15,65 @@ export default function BookDetail() {
   const navigate = useNavigate();
   const location = useLocation(); 
   const dispatch = useAppDispatch();
+  const queryClient = useQueryClient(); 
   
-  const [book, setBook] = useState<BookDetailType | null>(null);
-  const [related, setRelated] = useState<Book[]>([]);
-  const [loading, setLoading] = useState(true);
   const token = localStorage.getItem('token');
+  const { data: book, isLoading: loadingBook } = useQuery<BookDetailType>({
+    queryKey: ['book', id],
+    queryFn: () => getBookById(id!),
+    enabled: !!id, 
+  });
 
-  useEffect(() => {
-    if (!id) return;
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const data = await getBookById(id);
-        setBook(data);
-        if (data?.category?.id) {
-          const relatedData = await getBooksByCategory(data.category.id);
-          setRelated(relatedData);
-        }
-      } catch (e) { console.error(e); }
-      finally { setLoading(false); }
-    };
-    fetchData();
-  }, [id]);
+  const { data: related = [] } = useQuery<Book[]>({
+    queryKey: ['relatedBooks', book?.category?.id],
+    queryFn: () => getBooksByCategory(book!.category!.id),
+    enabled: !!book?.category?.id,
+  });
+
+  const borrowMutation = useMutation({
+    mutationFn: async (bookId: number | string) => {
+      const res = await fetch(`https://library-backend-production-b9cf.up.railway.app/api/loans`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ bookId }),
+      });
+      if (!res.ok) throw new Error('Gagal meminjam buku');
+      return res.json();
+    },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['book', id] });
+      const previousBook = queryClient.getQueryData<BookDetailType>(['book', id]);
+      if (previousBook) {
+        queryClient.setQueryData<BookDetailType>(['book', id], {
+          ...previousBook,
+          stock: Math.max(0, (previousBook.stock || 0) - 1) 
+        });
+      }
+      return { previousBook };
+    },
+    onError: (_err, _newTodo, context) => {
+      if (context?.previousBook) {
+        queryClient.setQueryData(['book', id], context.previousBook);
+      }
+      toast.error('Gagal meminjam buku. Stok dikembalikan.');
+    },
+    onSuccess: () => {
+      toast.success('Buku berhasil dipinjam! Cek menu My Loans.');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['book', id] });
+    }
+  });
 
   const handleAddToCart = () => {
     if (!token) {
-      toast.error('Silakan login terlebih dahulu untuk menambahkan buku ke keranjang.');
+      toast.error('Silakan login terlebih dahulu.');
       navigate('/login', { state: { from: location } });
       return;
     }
-
     if (!book) return;
     
     dispatch(addToCart({
@@ -53,7 +82,6 @@ export default function BookDetail() {
       coverImage: book.coverImage, 
       author: typeof book.author === 'string' ? book.author : "Unknown Author" 
     }));
-    
     toast.success(`"${book.title}" berhasil dimasukkan ke keranjang! 🛒`);
   };
 
@@ -64,16 +92,10 @@ export default function BookDetail() {
       return;
     }
     if (!book) return;
-    dispatch(addToCart({
-      id: book.id,
-      title: book.title,
-      coverImage: book.coverImage,
-      author: typeof book.author === 'string' ? book.author : "Unknown Author"
-    }));
-    navigate('/checkout', { state: { selectedIds: [book.id] } });
+    borrowMutation.mutate(book.id);
   };
 
-  if (loading) return <div className="p-10 text-center font-['Quicksand'] font-semibold text-[#1C65DA]">Memuat data buku...</div>;
+  if (loadingBook) return <div className="p-10 text-center font-['Quicksand'] font-semibold text-[#1C65DA] animate-pulse">Memuat data buku...</div>;
   if (!book) return <div className="p-10 text-center font-['Quicksand'] font-semibold text-red-500">Buku tidak ditemukan.</div>;
 
   return (

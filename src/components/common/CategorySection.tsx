@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query"; 
 import { Card } from "@/components/ui/card";
-
 import iconFiction from "@/assets/icons/Fiksi.png";
 import iconNonFiction from "@/assets/icons/Non-Fiction.png";
 import iconSelfImprovement from "@/assets/icons/Self-Improvement.png";
@@ -19,7 +18,6 @@ interface CategoryAPI {
   name: string;
 }
 
-// 🚀 FIX 1: Hapus ID Hardcode! Kita cuma simpan nama UI dan gambar ikonnya aja
 const CATEGORIES_UI = [
   { name: "Fiction", iconSrc: iconFiction },
   { name: "Non-Fiction", iconSrc: iconNonFiction }, 
@@ -35,37 +33,27 @@ interface CategorySectionProps {
 }
 
 export const CategorySection = ({ activeCategory, onSelectCategory }: CategorySectionProps) => {
-  const [dynamicCategories, setDynamicCategories] = useState<CategoryItem[]>([]);
+  const { data: dynamicCategories = CATEGORIES_UI.map(cat => ({ id: "", name: cat.name, iconSrc: cat.iconSrc })) } = useQuery<CategoryItem[]>({
+    queryKey: ["categories-ui-sync"],
+    queryFn: async () => {
+      const res = await fetch("https://library-backend-production-b9cf.up.railway.app/api/categories");
+      if (!res.ok) throw new Error("Gagal mengambil kategori");
+      const json = await res.json();
+      const dbCats: CategoryAPI[] = Array.isArray(json.data) ? json.data : json.data?.categories || [];
 
-  // 🚀 FIX 2: Tarik ID asli dari database, lalu kawinkan dengan gambar ikon lokal
-  useEffect(() => {
-    const fetchAndMergeCategories = async () => {
-      try {
-        const res = await fetch("https://library-backend-production-b9cf.up.railway.app/api/categories");
-        const json = await res.json();
-        const dbCats: CategoryAPI[] = Array.isArray(json.data) ? json.data : json.data?.categories || [];
-
-        const mergedCategories = CATEGORIES_UI.map((uiCat) => {
-          // Cari ID asli di database berdasarkan kecocokan nama
-          const foundInDb = dbCats.find((dbCat) => 
-            dbCat.name.toLowerCase().includes(uiCat.name.toLowerCase())
-          );
-          
-          return {
-            id: foundInDb ? foundInDb.id.toString() : "", // Ambil ID asli DB!
-            name: uiCat.name,
-            iconSrc: uiCat.iconSrc
-          };
-        });
-
-        setDynamicCategories(mergedCategories);
-      } catch (error) {
-        console.error("Gagal sinkronisasi kategori:", error);
-      }
-    };
-
-    fetchAndMergeCategories();
-  }, []);
+      return CATEGORIES_UI.map((uiCat) => {
+        const foundInDb = dbCats.find((dbCat) => 
+          dbCat.name.toLowerCase().includes(uiCat.name.toLowerCase())
+        );
+        
+        return {
+          id: foundInDb ? foundInDb.id.toString() : "", 
+          name: uiCat.name,
+          iconSrc: uiCat.iconSrc
+        };
+      });
+    },
+  });
 
   return (
     <div className="w-full max-w-[361px] md:max-w-[1200px] font-['Quicksand'] select-none mx-auto">
@@ -123,7 +111,6 @@ interface CategoryCardProps {
 const CategoryCard = ({ category, isActive, isDesktop, isRowOne, onClick }: CategoryCardProps) => {
   return (
     <Card
-      // 🚀 FIX 3: Klik hanya jalan kalau ID aslinya berhasil ketarik
       onClick={() => {
         if (category.id) onClick(category.id);
       }} 

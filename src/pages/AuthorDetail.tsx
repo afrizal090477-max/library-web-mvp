@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Book as BookIcon } from 'lucide-react';
 import { BookCard } from '@/components/common/BookCard';
 import { Book, Author } from '@/types';
 import { getBooks } from '@/lib/api'; 
-
-
+import { useQuery } from '@tanstack/react-query'; 
 
 type AuthorWithDetails = Author & {
   avatar?: string;
@@ -22,55 +21,47 @@ interface SearchApiResponse {
 export default function AuthorDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-
-  // State menggunakan tipe baru
-  const [author, setAuthor] = useState<AuthorWithDetails | null>(null);
-  const [books, setBooks] = useState<Book[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
     window.scrollTo(0, 0);
-    
-    const fetchAuthorData = async () => {
-      setIsLoading(true);
-      try {
-        const response = (await getBooks({})) as SearchApiResponse;
-        const allBooks = response?.data?.books || response?.books || [];
-        
-        const authorBooks = allBooks.filter((b: Book) => 
-           (typeof b.author === 'object' ? String(b.author.id) === id : String(b.author) === id)
-        );
-
-        setBooks(authorBooks);
-
-        if (authorBooks.length > 0) {
-          const authorInfo = authorBooks[0].author;
-          if (typeof authorInfo === 'object') {
-            setAuthor({
-              ...authorInfo,
-              booksCount: authorBooks.length, 
-              avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(authorInfo.name)}&background=F6F9FE&color=1C65DA&size=200`
-            });
-          } else {
-            setAuthor({
-              id: Number(id),
-              name: String(authorInfo),
-              booksCount: authorBooks.length,
-              avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(String(authorInfo))}&background=F6F9FE&color=1C65DA&size=200`
-            });
-          }
-        }
-      } catch (error) {
-        console.error("Gagal mengambil data author:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (id) {
-      fetchAuthorData();
-    }
   }, [id]);
+  const { data, isLoading } = useQuery({
+    queryKey: ['author-detail', id],
+    queryFn: async () => {
+      const response = (await getBooks({})) as SearchApiResponse;
+      const allBooks = response?.data?.books || response?.books || [];
+      
+      const authorBooks = allBooks.filter((b: Book) => 
+         (typeof b.author === 'object' ? String(b.author.id) === id : String(b.author) === id)
+      );
+
+      let authorInfo: AuthorWithDetails | null = null;
+      
+      if (authorBooks.length > 0) {
+        const rawAuthor = authorBooks[0].author;
+        if (typeof rawAuthor === 'object') {
+          authorInfo = {
+            ...rawAuthor,
+            booksCount: authorBooks.length, 
+            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(rawAuthor.name)}&background=F6F9FE&color=1C65DA&size=200`
+          };
+        } else {
+          authorInfo = {
+            id: Number(id),
+            name: String(rawAuthor),
+            booksCount: authorBooks.length,
+            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(String(rawAuthor))}&background=F6F9FE&color=1C65DA&size=200`
+          };
+        }
+      }
+      
+      return { author: authorInfo, books: authorBooks };
+    },
+    enabled: !!id,
+  });
+
+  const author = data?.author;
+  const books = data?.books || [];
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-[50vh]">

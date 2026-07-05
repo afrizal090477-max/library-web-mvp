@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ArrowLeft, Star, Share2 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { BASE_URL } from "@/lib/api"; 
+import { useQuery } from "@tanstack/react-query"; 
 
 export interface BookDetail {
   id: number;
@@ -17,43 +18,31 @@ export interface BookDetail {
 
 export function AdminPreviewBook() {
   const { id } = useParams();
-  const [book, setBook] = useState<BookDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
-
-  useEffect(() => {
-    const fetchBookDetail = async () => {
-      try {
-        setIsLoading(true);
-        const token = localStorage.getItem("token");
-        const res = await fetch(`${BASE_URL}/books/${id}`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        
-        if (!res.ok) throw new Error("Gagal mengambil data buku");
-        const json = await res.json();
-        const bookData = json.data?.book || json.data;
-        setBook(bookData);
-      } catch (err: unknown) {
-        if (err instanceof Error) setError(err.message);
-        else setError("Terjadi kesalahan sistem");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    if (id) fetchBookDetail();
-  }, [id]);
+  const token = localStorage.getItem("token");
+  const { data: book, isLoading, error } = useQuery<BookDetail, Error>({
+    queryKey: ["admin-book-detail", id],
+    queryFn: async () => {
+      const res = await fetch(`${BASE_URL}/books/${id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (!res.ok) throw new Error("Gagal mengambil data buku");
+      const json = await res.json();
+      return json.data?.book || json.data;
+    },
+    enabled: !!id && !!token,
+  });
 
   if (isLoading) {
     return <div className="p-12 text-center text-[#535862] font-quicksand animate-pulse text-lg">Memuat detail buku...</div>;
   }
   
   if (error || !book) {
-    return <div className="p-12 text-center font-bold text-[#EE1D52] font-quicksand text-lg">{error || "Buku tidak ditemukan"}</div>;
+    return <div className="p-12 text-center font-bold text-[#EE1D52] font-quicksand text-lg">{error?.message || "Buku tidak ditemukan"}</div>;
   }
 
   const MAX_LENGTH = 75;
@@ -71,7 +60,6 @@ export function AdminPreviewBook() {
             Preview Book
           </h1>
         </div>
-
 
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-[36px] w-full">
           <div className="bg-[#E9EAEB] p-[5.29px] sm:p-[8px] flex shrink-0 justify-center items-center w-[222.75px] h-[328.83px] sm:w-[337px] sm:h-[498px] mx-auto md:mx-0">

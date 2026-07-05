@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import Logo from '@/assets/logo-brand.svg';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
+import { useMutation } from '@tanstack/react-query'; 
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -16,34 +17,32 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   const navigate = useNavigate();
+  const registerMutation = useMutation({
+    mutationFn: async () => {
+      return await register(name, email, phone, password);    
+    },
+    onSuccess: () => {
+      toast.success("Registrasi berhasil! Silakan login dengan akun baru kamu.");
+      navigate('/login'); 
+    },
+    onError: (err: Error) => {
+      setError(err.message || "Registrasi gagal. Silakan coba lagi.");
+    }
+  });
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
+    
     if (password !== confirmPassword) {
       setError("Password dan Konfirmasi Password tidak sama.");
       return;
     }
     
-    setIsLoading(true);
-    try {
-      await register(name, email, phone, password);    
-      toast.success("Registrasi berhasil! Silakan login dengan akun baru kamu.");
-      navigate('/login'); 
-      
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Registrasi gagal. Silakan coba lagi.");
-      }
-    } finally {
-      setIsLoading(false);
-    }
+    registerMutation.mutate();
   };
 
   return (
@@ -87,7 +86,7 @@ export default function Register() {
                   onChange={(e) => setName(e.target.value)}
                   className="h-12 rounded-[12px] border-[#D5D7DA] px-4 font-medium"
                   required
-                  disabled={isLoading}
+                  disabled={registerMutation.isPending}
                 />
               </div>
 
@@ -103,7 +102,7 @@ export default function Register() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="h-12 rounded-[12px] border-[#D5D7DA] px-4 font-medium"
                   required
-                  disabled={isLoading}
+                  disabled={registerMutation.isPending}
                 />
               </div>
 
@@ -119,7 +118,7 @@ export default function Register() {
                   onChange={(e) => setPhone(e.target.value)}
                   className="h-12 rounded-[12px] border-[#D5D7DA] px-4 font-medium"
                   required
-                  disabled={isLoading}
+                  disabled={registerMutation.isPending}
                 />
               </div>
 
@@ -136,7 +135,7 @@ export default function Register() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="h-12 rounded-[12px] border-[#D5D7DA] px-4 pr-11 font-medium tracking-widest"
                     required
-                    disabled={isLoading}
+                    disabled={registerMutation.isPending}
                   />
                   <button
                     type="button"
@@ -160,7 +159,7 @@ export default function Register() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="h-12 rounded-[12px] border-[#D5D7DA] px-4 font-medium tracking-widest"
                   required
-                  disabled={isLoading}
+                  disabled={registerMutation.isPending}
                 />
               </div>
               
@@ -173,9 +172,9 @@ export default function Register() {
               <Button
                 type="submit"
                 className="h-12 w-full rounded-full bg-[#1C65DA] text-base font-bold hover:bg-[#1C65DA]/90 transition-all shadow-sm"
-                disabled={isLoading}
+                disabled={registerMutation.isPending}
               >
-                {isLoading ? "Creating Account..." : "Register"}
+                {registerMutation.isPending ? "Creating Account..." : "Register"}
               </Button>
             </form>
             

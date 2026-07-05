@@ -13,45 +13,40 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
 import Logo from "@/assets/logo-brand.svg";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from 'sonner';
+import { useMutation } from "@tanstack/react-query"; 
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-    setIsLoading(true);
-
-    try {
-      const { user, token } = await login(email, password);
+  const loginMutation = useMutation({
+    mutationFn: async () => {
+      return await login(email, password);
+    },
+    onSuccess: ({ user, token }) => {
       dispatch(setCredentials({ user, token }));
       toast.success("Login berhasil! Selamat datang kembali.");
-      if (user.role === 'ADMIN') {
+      if (user.role === 'ADMIN' || user.role === 'admin') {
         navigate("/admin/dashboard");
       } else {
         navigate("/");
       }
-      
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Email atau password salah.");
-      }
-    } finally {
-      setIsLoading(false);
+    },
+    onError: (err: Error) => {
+      setError(err.message || "Email atau password salah.");
     }
+  });
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
+    loginMutation.mutate();
   };
 
   return (
@@ -97,7 +92,7 @@ export default function Login() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="h-12 rounded-[12px] border-[#D1D5DB] px-4"
                   required
-                  disabled={isLoading}
+                  disabled={loginMutation.isPending}
                 />
               </div>
               <div className="space-y-1.5">
@@ -116,7 +111,7 @@ export default function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="h-12 rounded-[12px] border-[#D1D5DB] px-4 pr-11"
                     required
-                    disabled={isLoading}
+                    disabled={loginMutation.isPending}
                   />
                   <button
                     type="button"
@@ -135,9 +130,9 @@ export default function Login() {
               <Button
                 type="submit"
                 className="h-12 w-full rounded-full bg-[#1C65DA] text-base font-bold hover:bg-[#1C65DA]/90"
-                disabled={isLoading}
+                disabled={loginMutation.isPending}
               >
-                {isLoading ? "Processing..." : "Login"}
+                {loginMutation.isPending ? "Processing..." : "Login"}
               </Button>
             </form>
 

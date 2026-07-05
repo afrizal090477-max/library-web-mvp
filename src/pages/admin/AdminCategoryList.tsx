@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Search, Plus, Edit2, Trash2, X, LibraryBig, UploadCloud } from "lucide-react";
 import { BASE_URL } from "@/lib/api";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"; 
 
 export interface Category {
   id: number;
@@ -9,8 +10,7 @@ export interface Category {
 }
 
 export function AdminCategoryList() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient(); 
   const [search, setSearch] = useState("");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,33 +19,77 @@ export function AdminCategoryList() {
   
   const [iconFile, setIconFile] = useState<File | null>(null);
   const [iconPreview, setIconPreview] = useState<string | null>(null);
-  
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`${BASE_URL}/categories`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) throw new Error("Gagal mengambil data kategori");
-        const json = await res.json();
-        const categoryData = Array.isArray(json.data) ? json.data : json.data?.categories || [];
-        setCategories(categoryData);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsLoading(false); 
+  const token = localStorage.getItem("token");
+  const { data: categories = [], isLoading } = useQuery<Category[]>({
+    queryKey: ["admin-categories"],
+    queryFn: async () => {
+      const res = await fetch(`${BASE_URL}/categories`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) throw new Error("Gagal mengambil data kategori");
+      const json = await res.json();
+      return Array.isArray(json.data) ? json.data : json.data?.categories || [];
+    },
+    enabled: !!token,
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: async (payload: FormData) => {
+      const url = editingCategory 
+        ? `${BASE_URL}/categories/${editingCategory.id}` 
+        : `${BASE_URL}/categories`;
+      const method = editingCategory ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: payload,
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.message || "Gagal menyimpan data kategori. Pastikan Backend mendukung FormData.");
       }
-    };
+      return res.json();
+    },
+    onSuccess: () => {
+      alert(`✅ Kategori berhasil ${editingCategory ? "diperbarui" : "ditambahkan"}!`);
+      setIsModalOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-options"] });
+      queryClient.invalidateQueries({ queryKey: ["categories-ui-sync"] });
+    },
+    onError: (err: Error) => {
+      alert(err.message || "Terjadi kesalahan");
+    }
+  });
 
-    loadCategories();
-  }, [refreshTrigger]);
+  // 🚀 REFACTOR 3: Delete Category pakai useMutation
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`${BASE_URL}/categories/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Gagal menghapus kategori.");
+      return res.json();
+    },
+    onSuccess: () => {
+      alert("✅ Kategori berhasil dihapus!");
+      queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-options"] });
+      queryClient.invalidateQueries({ queryKey: ["categories-ui-sync"] });
+    },
+    onError: (err: Error) => {
+      alert(err.message || "Terjadi kesalahan saat menghapus");
+    }
+  });
 
   const filteredCategories = categories.filter((category) =>
     category.name.toLowerCase().includes(search.toLowerCase())
@@ -75,66 +119,22 @@ export function AdminCategoryList() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) return alert("Nama kategori tidak boleh kosong!");
 
-    setIsSubmitting(true);
-    try {
-      const token = localStorage.getItem("token");
-      const url = editingCategory 
-        ? `${BASE_URL}/categories/${editingCategory.id}` 
-        : `${BASE_URL}/categories`;
-      const method = editingCategory ? "PUT" : "POST";
-
-      const payload = new FormData();
-      payload.append("name", formData.name);
-      if (iconFile) {
-        payload.append("icon", iconFile); 
-      }
-
-      const res = await fetch(url, {
-        method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: payload,
-      });
-
-      if (!res.ok) {
-        const errJson = await res.json().catch(() => ({}));
-        throw new Error(errJson.message || "Gagal menyimpan data kategori. Pastikan Backend mendukung FormData.");
-      }
-
-      alert(`✅ Kategori berhasil ${editingCategory ? "diperbarui" : "ditambahkan"}!`);
-      setIsModalOpen(false);
-      setRefreshTrigger((prev) => prev + 1); 
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Terjadi kesalahan");
-    } finally {
-      setIsSubmitting(false);
+    const payload = new FormData();
+    payload.append("name", formData.name);
+    if (iconFile) {
+      payload.append("icon", iconFile); 
     }
+
+    saveMutation.mutate(payload);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = (id: number) => {
     if (!window.confirm("Yakin ingin menghapus kategori ini?")) return;
-
-    try {
-      setIsLoading(true); 
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${BASE_URL}/categories/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!res.ok) throw new Error("Gagal menghapus kategori.");
-
-      alert("✅ Kategori berhasil dihapus!");
-      setRefreshTrigger((prev) => prev + 1);
-    } catch (err) {
-      setIsLoading(false);
-      alert(err instanceof Error ? err.message : "Terjadi kesalahan saat menghapus");
-    }
+    deleteMutation.mutate(id);
   };
 
   return (
@@ -163,7 +163,7 @@ export function AdminCategoryList() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {isLoading ? (
+        {isLoading || deleteMutation.isPending ? (
           <div className="col-span-full p-8 text-center text-[#535862] animate-pulse font-quicksand">Memuat data kategori...</div>
         ) : filteredCategories.length === 0 ? (
           <div className="col-span-full p-8 text-center text-[#535862] font-quicksand bg-white rounded-2xl border border-[#E5E7EB]">Data kategori tidak ditemukan.</div>
@@ -239,8 +239,8 @@ export function AdminCategoryList() {
               
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-2.5 bg-white border border-[#D5D7DA] text-[#374151] hover:bg-gray-50 text-sm font-bold font-quicksand rounded-xl transition-colors">Cancel</button>
-                <button type="submit" disabled={isSubmitting} className="flex-1 px-4 py-2.5 bg-[#1C65DA] hover:bg-[#154fb6] text-white text-sm font-bold font-quicksand rounded-xl transition-colors disabled:opacity-50">
-                  {isSubmitting ? "Saving..." : "Save Category"}
+                <button type="submit" disabled={saveMutation.isPending} className="flex-1 px-4 py-2.5 bg-[#1C65DA] hover:bg-[#154fb6] text-white text-sm font-bold font-quicksand rounded-xl transition-colors disabled:opacity-50">
+                  {saveMutation.isPending ? "Saving..." : "Save Category"}
                 </button>
               </div>
             </form>

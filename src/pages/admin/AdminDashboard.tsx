@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
 import { getAdminOverview, AdminOverviewData } from "@/lib/api";
 import { BookOpen, Users, Clock, AlertOctagon, AlertCircle, TrendingUp, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query"; 
 import Logo from "@/assets/logo-brand.svg";
 
 interface TopBook {
@@ -30,29 +30,14 @@ type ExtendedOverview = AdminOverviewData & {
 };
 
 export function AdminDashboard() {
-  const [overview, setOverview] = useState<AdminOverviewData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchOverview = async () => {
-      try {
-        setIsLoading(true);
-        const data = await getAdminOverview();
-        setOverview(data);
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("Gagal mengambil data dari server");
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchOverview();
-  }, []);
+  const { data: overview, isLoading, error } = useQuery<ExtendedOverview, Error>({
+    queryKey: ["admin-overview"],
+    queryFn: async () => {
+      const data = await getAdminOverview();
+      return data as ExtendedOverview;
+    }
+  });
 
   if (isLoading) {
     return (
@@ -61,11 +46,12 @@ export function AdminDashboard() {
       </div>
     );
   }
+  
   if (error) {
     return (
       <div className="p-6 text-red-600 border border-red-200 bg-red-50 rounded-xl font-quicksand">
         <h3 className="font-bold text-[18px]">Error!</h3>
-        <p>{error}</p>
+        <p>{error.message}</p>
       </div>
     );
   }
@@ -75,9 +61,8 @@ export function AdminDashboard() {
   const activeLoans = overview?.loans?.active || 0;
   const overdueLoansCount = overview?.loans?.overdue || 0;
   
-  const overviewData = overview as unknown as ExtendedOverview;
-  const topBooks: TopBook[] = overviewData?.topBorrowed || []; 
-  const overdueList: OverdueLoan[] = overviewData?.overdueLoansList || overviewData?.loans?.overdueList || [];
+  const topBooks: TopBook[] = overview?.topBorrowed || []; 
+  const overdueList: OverdueLoan[] = overview?.overdueLoansList || overview?.loans?.overdueList || [];
 
   return (
     <div className="relative z-10 pb-10 space-y-6 font-quicksand">
@@ -204,7 +189,11 @@ export function AdminDashboard() {
           <div className="flex flex-col flex-1 gap-4">
             {topBooks.length > 0 ? (
               topBooks.slice(0, 4).map((book, idx) => (
-                <div key={book.id || idx} onClick={() => navigate("/admin/books")} className="flex items-center gap-3 p-2 transition-all border border-transparent shadow-sm cursor-pointer rounded-xl bg-white/30 hover:bg-white/70 hover:border-white/80 hover:shadow-md">
+                <div 
+                  key={book.id || idx} 
+                  onClick={() => navigate(`/admin/books/${book.id}`)} 
+                  className="flex items-center gap-3 p-2 transition-all border border-transparent shadow-sm cursor-pointer rounded-xl bg-white/30 hover:bg-white/70 hover:border-white/80 hover:shadow-md"
+                >
                   <div className="w-[48px] h-[64px] bg-white/90 rounded-md overflow-hidden flex-shrink-0 border border-[#E5E7EB] shadow-sm">
                     {book.coverImage ? (
                       <img src={book.coverImage} alt={book.title} className="object-cover w-full h-full" />

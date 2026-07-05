@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "@/lib/api"; 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"; 
 
 export interface LoanItem {
   id: number;
@@ -31,50 +32,35 @@ export interface LoanItem {
 
 export function AdminLoanList() {
   const navigate = useNavigate();
-  const [loans, setLoans] = useState<LoanItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient(); 
+  
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("Active"); 
   const filters = ["All", "Active", "Returned", "Overdue"];
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`${BASE_URL}/admin/loans?status=all&page=1&limit=20`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, 
-          },
-        });
-        
-        if (!res.ok) {
-          const errJson = await res.json().catch(() => ({}));
-          throw new Error(errJson.message || `Error Server: ${res.status}`);
-        }
-        
-        const json = await res.json();
-        const loanData = Array.isArray(json.data) ? json.data : json.data?.loans || [];
-        setLoans(loanData);
-      } catch (err: unknown) {
-        if (err instanceof Error) setError(err.message);
-        else setError("Terjadi kesalahan sistem");
-      } finally {
-        setIsLoading(false); 
-      }
-    };
-
-    loadData();
-  }, [refreshTrigger]);
-  const handleReturn = async (loanId: number) => {
-    if (!window.confirm("Apakah Anda yakin ingin menyetujui pengembalian buku ini?")) return;
-
-    try {
-      setIsLoading(true); 
-      const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
+  const { data: loans = [], isLoading, error } = useQuery<LoanItem[], Error>({
+    queryKey: ["admin-loans"],
+    queryFn: async () => {
+      const res = await fetch(`${BASE_URL}/admin/loans?status=all&page=1&limit=20`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, 
+        },
+      });
       
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.message || `Error Server: ${res.status}`);
+      }
+      
+      const json = await res.json();
+      return Array.isArray(json.data) ? json.data : json.data?.loans || [];
+    },
+    enabled: !!token,
+  });
+
+  const returnMutation = useMutation({
+    mutationFn: async (loanId: number) => {
       const res = await fetch(`${BASE_URL}/loans/${loanId}/return`, {
         method: "PATCH",
         headers: {
@@ -87,12 +73,21 @@ export function AdminLoanList() {
         const errJson = await res.json().catch(() => ({}));
         throw new Error(errJson.message || "Gagal memproses pengembalian buku");
       }
+      return res.json();
+    },
+    onSuccess: () => {
       alert("✅ Buku berhasil dikembalikan!");
-      setRefreshTrigger((prev) => prev + 1); 
-    } catch (err) {
-      setIsLoading(false);
-      alert(err instanceof Error ? err.message : "Terjadi kesalahan");
+      queryClient.invalidateQueries({ queryKey: ["admin-loans"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-overview"] }); 
+    },
+    onError: (err: Error) => {
+      alert(err.message || "Terjadi kesalahan");
     }
+  });
+
+  const handleReturn = (loanId: number) => {
+    if (!window.confirm("Apakah Anda yakin ingin menyetujui pengembalian buku ini?")) return;
+    returnMutation.mutate(loanId);
   };
 
   const formatDate = (dateString?: string) => {
@@ -195,7 +190,7 @@ export function AdminLoanList() {
         {isLoading ? (
           <div className="p-8 text-center text-[#535862] animate-pulse font-quicksand">Memuat data peminjaman...</div>
         ) : error ? (
-          <div className="p-8 font-bold text-center text-[#EE1D52] font-quicksand">{error}</div>
+          <div className="p-8 font-bold text-center text-[#EE1D52] font-quicksand">{error.message}</div>
         ) : filteredLoans.length === 0 ? (
           <div className="p-8 text-center text-[#535862] font-quicksand">Data tidak ditemukan</div>
         ) : (
@@ -273,9 +268,10 @@ export function AdminLoanList() {
                     {loan.status?.toUpperCase() === "BORROWED" && (
                       <button
                         onClick={() => handleReturn(loan.id)}
-                        className="px-4 py-2 bg-[#079455] hover:bg-[#067a44] text-white text-xs sm:text-sm font-bold font-quicksand rounded-lg transition-colors shadow-sm w-full sm:w-auto"
+                        disabled={returnMutation.isPending}
+                        className="px-4 py-2 bg-[#079455] hover:bg-[#067a44] disabled:opacity-50 text-white text-xs sm:text-sm font-bold font-quicksand rounded-lg transition-colors shadow-sm w-full sm:w-auto"
                       >
-                        Mark as Returned
+                        {returnMutation.isPending ? "Processing..." : "Mark as Returned"}
                       </button>
                     )}
                   </div>

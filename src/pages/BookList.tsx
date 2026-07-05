@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { fetchCategories } from '@/lib/api';
 import { SlidersHorizontal, Star, Check } from 'lucide-react';
 import BookListSection from '@/components/common/BookListSection';
 import {
@@ -19,21 +20,14 @@ interface CategoryAPI {
 
 export default function BookList() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [dbCategories, setDbCategories] = useState<CategoryAPI[]>([]);
+  const { data: dbCategories = [], isLoading } = useQuery<CategoryAPI[]>({
+    queryKey: ['categories'],
+    queryFn: fetchCategories,
+  });
   
   const searchQuery = searchParams.get('q') || undefined;
   const categoryQuery = searchParams.get('category') || undefined; 
   const ratingQuery = searchParams.get('rating') ? Number(searchParams.get('rating')) : undefined; 
-
-  useEffect(() => {
-    fetch('https://library-backend-production-b9cf.up.railway.app/api/categories')
-      .then((res) => res.json())
-      .then((json) => {
-        const cats = Array.isArray(json.data) ? json.data : json.data?.categories || [];
-        setDbCategories(cats);
-      })
-      .catch((err) => console.error("Gagal load categories", err));
-  }, []);
 
   const handleCategoryToggle = (categoryName: string) => {
     const newParams = new URLSearchParams(searchParams);
@@ -66,7 +60,7 @@ export default function BookList() {
         </h4>
         
         <div className="flex flex-col w-full gap-[8px] mt-2">
-          {dbCategories.length === 0 ? (
+          {isLoading ? (
             <span className="text-sm text-gray-500 font-quicksand animate-pulse">Memuat kategori...</span>
           ) : (
             dbCategories.map((category) => {
@@ -92,6 +86,7 @@ export default function BookList() {
       </div>
 
       <div className="w-full border-t border-[#D5D7DA] my-2 md:my-0"></div>
+      
       <div className="flex flex-col items-start px-[16px] gap-[10px] w-full pb-[20px] md:pb-0">
         <h4 className="w-full font-bold text-[18px] leading-[32px] tracking-[-0.02em] text-[#0A0D12]">
           Rating
@@ -126,6 +121,7 @@ export default function BookList() {
   return (
     <div className="w-full min-h-screen pt-[100px] md:pt-[128px] pb-[80px] bg-[#FFFFFF] font-['Quicksand'] overflow-x-hidden">
       <div className="mx-auto w-full max-w-[1440px] px-[16px] md:px-[120px] flex flex-col items-start gap-[16px] md:gap-[32px]">
+        
         <div className="w-full">
           <h1 className="font-bold text-[24px] md:text-[36px] leading-[36px] md:leading-[44px] text-[#0A0D12]">
             Book List
@@ -136,6 +132,7 @@ export default function BookList() {
             </p>
           )}
         </div>
+        
         <Sheet>
           <SheetTrigger asChild>
             <button className="md:hidden flex flex-row justify-between items-center p-[12px] w-full bg-[#FFFFFF] shadow-[0px_0px_20px_rgba(203,202,202,0.25)] rounded-[12px] active:scale-[0.99] transition-transform outline-none">
@@ -166,8 +163,8 @@ export default function BookList() {
               selectedRating={ratingQuery} 
             />
           </div>
-          
         </div>
+        
       </div>
     </div>
   );

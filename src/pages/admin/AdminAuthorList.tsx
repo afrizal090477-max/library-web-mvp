@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Search, Plus, Edit2, Trash2, X } from "lucide-react";
 import { BASE_URL } from "@/lib/api";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export interface Author {
   id: number;
@@ -9,41 +10,85 @@ export interface Author {
 }
 
 export function AdminAuthorList() {
-  const [authors, setAuthors] = useState<Author[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient(); 
   const [search, setSearch] = useState("");
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAuthor, setEditingAuthor] = useState<Author | null>(null);
   const [formData, setFormData] = useState({ name: "", bio: "" });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  useEffect(() => {
-    const loadAuthors = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`${BASE_URL}/authors`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+  const token = localStorage.getItem("token");
+  const { data: authors = [], isLoading } = useQuery<Author[]>({
+    queryKey: ["admin-authors"],
+    queryFn: async () => {
+      const res = await fetch(`${BASE_URL}/authors`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-        if (!res.ok) throw new Error("Gagal mengambil data penulis");
+      if (!res.ok) throw new Error("Gagal mengambil data penulis");
 
-        const json = await res.json();
-        const authorData = Array.isArray(json.data) ? json.data : json.data?.authors || [];
-        setAuthors(authorData);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsLoading(false); 
+      const json = await res.json();
+      return Array.isArray(json.data) ? json.data : json.data?.authors || [];
+    },
+    enabled: !!token,
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: async (payload: { id?: number; name: string; bio: string }) => {
+      const url = payload.id ? `${BASE_URL}/authors/${payload.id}` : `${BASE_URL}/authors`;
+      const method = payload.id ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name: payload.name, bio: payload.bio }),
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.message || "Gagal menyimpan data penulis");
       }
-    };
+      return res.json();
+    },
+    onSuccess: (_, variables) => {
+      alert(`✅ Penulis berhasil ${variables.id ? "diperbarui" : "ditambahkan"}!`);
+      setIsModalOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["admin-authors"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-options"] }); 
+    },
+    onError: (err: Error) => {
+      alert(err.message || "Terjadi kesalahan");
+    }
+  });
 
-    loadAuthors();
-  }, [refreshTrigger]);
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`${BASE_URL}/authors/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.message || "Gagal menghapus penulis. Pastikan tidak ada buku yang terkait.");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      alert("✅ Penulis berhasil dihapus!");
+      queryClient.invalidateQueries({ queryKey: ["admin-authors"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-options"] });
+    },
+    onError: (err: Error) => {
+      alert(err.message || "Terjadi kesalahan saat menghapus");
+    }
+  });
 
   const filteredAuthors = authors.filter((author) =>
     author.name.toLowerCase().includes(search.toLowerCase())
@@ -61,64 +106,15 @@ export function AdminAuthorList() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) return alert("Nama penulis tidak boleh kosong!");
-
-    setIsSubmitting(true);
-    try {
-      const token = localStorage.getItem("token");
-      const url = editingAuthor 
-        ? `${BASE_URL}/authors/${editingAuthor.id}` 
-        : `${BASE_URL}/authors`;
-      const method = editingAuthor ? "PUT" : "POST";
-
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!res.ok) {
-        const errJson = await res.json().catch(() => ({}));
-        throw new Error(errJson.message || "Gagal menyimpan data penulis");
-      }
-
-      alert(`✅ Penulis berhasil ${editingAuthor ? "diperbarui" : "ditambahkan"}!`);
-      setIsModalOpen(false);
-      setRefreshTrigger((prev) => prev + 1); 
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Terjadi kesalahan");
-    } finally {
-      setIsSubmitting(false);
-    }
+    saveMutation.mutate({ id: editingAuthor?.id, ...formData });
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = (id: number) => {
     if (!window.confirm("Yakin ingin menghapus penulis ini? (Gagal jika penulis masih memiliki buku yang terdaftar)")) return;
-
-    try {
-      setIsLoading(true); 
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${BASE_URL}/authors/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!res.ok) {
-        const errJson = await res.json().catch(() => ({}));
-        throw new Error(errJson.message || "Gagal menghapus penulis. Pastikan tidak ada buku yang terkait.");
-      }
-
-      alert("✅ Penulis berhasil dihapus!");
-      setRefreshTrigger((prev) => prev + 1);
-    } catch (err) {
-      setIsLoading(false);
-      alert(err instanceof Error ? err.message : "Terjadi kesalahan saat menghapus");
-    }
+    deleteMutation.mutate(id);
   };
 
   return (
@@ -148,7 +144,7 @@ export function AdminAuthorList() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {isLoading ? (
+        {isLoading || deleteMutation.isPending ? (
           <div className="col-span-full p-8 text-center text-[#535862] animate-pulse font-quicksand">
             Memuat data penulis...
           </div>
@@ -237,10 +233,10 @@ export function AdminAuthorList() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={saveMutation.isPending}
                   className="flex-1 px-4 py-2.5 bg-[#1C65DA] hover:bg-[#154fb6] text-white text-sm font-bold font-quicksand rounded-xl transition-colors disabled:opacity-50"
                 >
-                  {isSubmitting ? "Saving..." : "Save Author"}
+                  {saveMutation.isPending ? "Saving..." : "Save Author"}
                 </button>
               </div>
             </form>

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query'; 
 import { Search, Star } from 'lucide-react';
-
 
 interface Review {
   id: number;
@@ -23,38 +23,27 @@ interface Review {
 }
 
 export function ReviewsTab() {
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-
-  useEffect(() => {
-    const fetchMyReviews = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch('https://library-backend-production-b9cf.up.railway.app/api/me/reviews?page=1&limit=20', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        const json = await response.json();
-        if (json.success && json.data && Array.isArray(json.data.reviews)) {
-          setReviews(json.data.reviews);
-        } else {
-          setReviews([]);
+  const token = localStorage.getItem('token');
+  const { data: reviews = [], isLoading: loading } = useQuery<Review[]>({
+    queryKey: ['my-reviews'],
+    queryFn: async () => {
+      if (!token) return [];
+      const response = await fetch('https://library-backend-production-b9cf.up.railway.app/api/me/reviews?page=1&limit=20', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
-        
-      } catch (error) {
-        console.error("Gagal mengambil data review:", error);
-      } finally {
-        setLoading(false);
+      });
+      
+      const json = await response.json();
+      if (json.success && json.data && Array.isArray(json.data.reviews)) {
+        return json.data.reviews;
       }
-    };
-
-    fetchMyReviews();
-  }, []);
+      return [];
+    },
+    enabled: !!token, 
+  });
 
   const filteredReviews = reviews.filter(review => 
     review.book?.title?.toLowerCase().includes(searchQuery.toLowerCase())

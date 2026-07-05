@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query'; 
 import { getBooks } from '@/lib/api';
 import { Book } from '@/types'; 
 import { BookCard } from '@/components/common/BookCard';
@@ -12,29 +12,18 @@ interface FetchBooksResponse {
 }
 
 export default function Books() {
-  const [books, setBooks] = useState<Book[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
+  const { data: books = [], isLoading } = useQuery<Book[]>({
+    queryKey: ['all-books'],
+    queryFn: async () => {
+      const response = (await getBooks({ page: 1, limit: 20 })) as FetchBooksResponse | Book[]; 
+      return Array.isArray(response) 
+        ? response 
+        : response?.data?.books || response?.books || [];
+    },
+  });
 
-  useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        setLoading(true);
-        const response = (await getBooks({ page: 1, limit: 20 })) as FetchBooksResponse | Book[]; 
-        const booksData = Array.isArray(response) 
-          ? response 
-          : response?.data?.books || response?.books || [];
-        setBooks(booksData);
-      } catch (error) {
-        console.error('Gagal mengambil data buku:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBooks();
-  }, []);
   const filteredBooks = books.filter(book =>
     book.title.toLowerCase().includes(query.toLowerCase()) ||
     book.author?.name.toLowerCase().includes(query.toLowerCase())
@@ -59,7 +48,7 @@ export default function Books() {
         </div>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4 lg:grid-cols-5">
           {Array.from({ length: 10 }).map((_, i) => (
             <div key={i} className="h-[320px] animate-pulse rounded-xl bg-gray-200" />

@@ -6,7 +6,6 @@ interface HeroSectionProps {
 
 export const HeroSection = ({ covers = [] }: HeroSectionProps) => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  
   useEffect(() => {
     if (!covers || !Array.isArray(covers) || covers.length === 0) return;
     const slideInterval = setInterval(() => {

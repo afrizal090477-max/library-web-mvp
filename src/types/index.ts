@@ -2,7 +2,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  // 🚀 PERBAIKAN 1: Tambahin 'ADMIN' di sini!
+  phone?: string; 
   role: 'admin' | 'user' | 'ADMIN'; 
   avatar?: string;
 }
@@ -18,7 +18,6 @@ export interface Category {
   name: string;
 }
 
-// 🚀 PERBAIKAN 2: Dua interface Review digabung jadi satu biar nggak bentrok
 export interface Review {
   id: number;
   userId?: number;

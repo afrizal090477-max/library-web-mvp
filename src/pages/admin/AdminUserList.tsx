@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { getAdminUsers } from "@/lib/api";
-
+import { useQuery } from "@tanstack/react-query"; 
 
 interface UserItem {
   id: number | string;
@@ -23,38 +23,30 @@ interface AdminUserResponse {
   };
 }
 
-
 export function AdminUserList() {
-  const [users, setUsers] = useState<UserItem[]>([]);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalEntries, setTotalEntries] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
   const limit = 10;
-
   useEffect(() => {
-    const fetchUsers = async () => {
-      setIsLoading(true);
-      try {
-        const response = (await getAdminUsers(currentPage, limit, search)) as AdminUserResponse;
-        
-        setUsers(response.data?.users || []);
-        setTotalPages(response.data?.pagination?.totalPages || 1);
-        setTotalEntries(response.data?.pagination?.total || 0);
-      } catch (error) {
-        console.error("Gagal mengambil data user:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    const delayDebounceFn = setTimeout(() => {
-      fetchUsers();
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+      setCurrentPage(1); 
     }, 500);
+    return () => clearTimeout(handler);
+  }, [search]);
+  const { data, isLoading } = useQuery<AdminUserResponse, Error>({
+    queryKey: ["admin-users", currentPage, limit, debouncedSearch],
+    queryFn: async () => {
+      const response = await getAdminUsers(currentPage, limit, debouncedSearch);
+      return response as AdminUserResponse;
+    },
+    placeholderData: (previousData) => previousData, 
+  });
 
-    return () => clearTimeout(delayDebounceFn);
-  }, [currentPage, search]);
+  const users = data?.data?.users || [];
+  const totalPages = data?.data?.pagination?.totalPages || 1;
+  const totalEntries = data?.data?.pagination?.total || 0;
 
   const handlePrev = () => {
     if (currentPage > 1) setCurrentPage((prev) => prev - 1);
@@ -66,7 +58,6 @@ export function AdminUserList() {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
-    setCurrentPage(1); 
   };
 
   const startEntry = totalEntries === 0 ? 0 : (currentPage - 1) * limit + 1;

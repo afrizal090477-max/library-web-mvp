@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Search, Star, X } from "lucide-react";
 import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface Loan {
   id: number;
@@ -18,56 +19,40 @@ interface Loan {
 }
 
 export function BorrowedListTab() {
-  const [loans, setLoans] = useState<Loan[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient(); 
   const [searchQuery, setSearchQuery] = useState("");
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [selectedBookId, setSelectedBookId] = useState<number | null>(null);
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const token = localStorage.getItem("token");
 
-  useEffect(() => {
-    const fetchLoans = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem("token");
-        const response = await fetch(
-          "https://library-backend-production-b9cf.up.railway.app/api/me/loans?page=1&limit=50",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
+  // 🚀 1. REFACTOR FETCH PINJAMAN PAKAI USEQUERY
+  const { data: loans = [], isLoading: loading } = useQuery<Loan[]>({
+    queryKey: ["my-loans"],
+    queryFn: async () => {
+      if (!token) return [];
+      const response = await fetch(
+        "https://library-backend-production-b9cf.up.railway.app/api/me/loans?page=1&limit=50",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
-        );
-
-        const json = await response.json();
-        if (json.success && json.data && Array.isArray(json.data.loans)) {
-          setLoans(json.data.loans);
-        } else {
-          setLoans([]);
         }
-      } catch (error) {
-        console.error("Gagal mengambil data pinjaman:", error);
-        toast.error("Gagal memuat daftar pinjaman");
-      } finally {
-        setLoading(false);
+      );
+      const json = await response.json();
+      if (json.success && json.data && Array.isArray(json.data.loans)) {
+        return json.data.loans;
       }
-    };
-    fetchLoans();
-  }, []);
+      return [];
+    },
+    enabled: !!token, 
+  });
 
-  const handleSubmitReview = async () => {
-    if (rating === 0) {
-      toast.error("Silakan berikan rating minimal 1 bintang!");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const token = localStorage.getItem("token");
+  const reviewMutation = useMutation({
+    mutationFn: async () => {
       const response = await fetch(
         "https://library-backend-production-b9cf.up.railway.app/api/reviews",
         {
@@ -81,24 +66,32 @@ export function BorrowedListTab() {
             star: rating,
             comment: reviewText || null, 
           }),
-        },
+        }
       );
-
       const json = await response.json();
-      if (json.success || response.ok) {
-        toast.success("Ulasan berhasil dikirim!");
-        setIsReviewModalOpen(false);
-        setRating(0);
-        setReviewText("");
-        setSelectedBookId(null);
-      } else {
-        toast.error(json.message || "Gagal mengirim ulasan");
-      }
-    } catch {
-      toast.error("Terjadi kesalahan jaringan");
-    } finally {
-      setIsSubmitting(false);
+      if (!response.ok || !json.success) throw new Error(json.message || "Gagal mengirim ulasan");
+      return json;
+    },
+    onSuccess: () => {
+      toast.success("Ulasan berhasil dikirim! ⭐");
+      setIsReviewModalOpen(false);
+      setRating(0);
+      setReviewText("");
+      setSelectedBookId(null);
+      // Refresh data buku siapa tau butuh
+      queryClient.invalidateQueries({ queryKey: ["my-loans"] }); 
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Terjadi kesalahan saat mengirim ulasan.");
     }
+  });
+
+  const handleSubmitReview = () => {
+    if (rating === 0) {
+      toast.error("Silakan berikan rating minimal 1 bintang!");
+      return;
+    }
+    reviewMutation.mutate();
   };
 
   const openReviewModal = (bookId: number) => {
@@ -302,10 +295,10 @@ export function BorrowedListTab() {
             />
             <button
               onClick={handleSubmitReview}
-              disabled={isSubmitting}
+              disabled={reviewMutation.isPending}
               className="flex justify-center items-center w-full h-[40px] md:h-[48px] bg-[#1C65DA] hover:bg-[#1652b4] disabled:opacity-50 text-white font-bold text-[14px] md:text-[16px] rounded-[200px] transition-colors outline-none"
             >
-              {isSubmitting ? "Sending..." : "Send"}
+              {reviewMutation.isPending ? "Sending..." : "Send"}
             </button>
           </div>
         </div>

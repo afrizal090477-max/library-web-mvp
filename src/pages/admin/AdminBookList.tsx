@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Search, Star, MoreHorizontal, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { BASE_URL } from "@/lib/api"; 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"; 
 
 export interface AdminBookItem {
   id: number;
@@ -16,53 +17,35 @@ export interface AdminBookItem {
 
 export function AdminBookList() {
   const navigate = useNavigate();
-  const [books, setBooks] = useState<AdminBookItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient(); 
+  
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
   const filters = ["All", "Available", "Borrowed", "Returned", "Damaged"];
   const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [bookToDelete, setBookToDelete] = useState<{id: number, title: string} | null>(null);
 
-  useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        setIsLoading(true);
-        const token = localStorage.getItem("token");
-        const res = await fetch(`${BASE_URL}/admin/books`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) throw new Error("Gagal mengambil data buku dari server");
-        const json = await res.json();
-        const bookData = Array.isArray(json.data) ? json.data : json.data?.books || [];
-        setBooks(bookData);
-      } catch (err: unknown) {
-        if (err instanceof Error) setError(err.message);
-        else setError("Terjadi kesalahan sistem");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const token = localStorage.getItem("token");
+  const { data: books = [], isLoading, error } = useQuery<AdminBookItem[], Error>({
+    queryKey: ["admin-books"],
+    queryFn: async () => {
+      const res = await fetch(`${BASE_URL}/admin/books`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) throw new Error("Gagal mengambil data buku dari server");
+      const json = await res.json();
+      return Array.isArray(json.data) ? json.data : json.data?.books || [];
+    },
+    enabled: !!token,
+  });
 
-    fetchBooks();
-  }, [refreshTrigger]);
-
-  const handleOpenDeleteModal = (id: number, title: string) => {
-    setOpenDropdownId(null); 
-    setBookToDelete({ id, title });
-  };
-
-  const confirmDeleteBook = async () => {
-    if (!bookToDelete) return;
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${BASE_URL}/books/${bookToDelete.id}`, {
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`${BASE_URL}/books/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -72,15 +55,30 @@ export function AdminBookList() {
         const errJson = await res.json();
         throw new Error(errJson.message || "Gagal menghapus buku");
       }
+      return res.json();
+    },
+    onSuccess: () => {
       setToastMessage("Data berhasil dihapus");
-      setRefreshTrigger(prev => prev + 1);
+      queryClient.invalidateQueries({ queryKey: ["admin-books"] });
+      queryClient.invalidateQueries({ queryKey: ["all-books"] });
+      
       setTimeout(() => setToastMessage(null), 3000);
-    } catch (err: unknown) {
-      if (err instanceof Error) alert(err.message);
-      else alert("Gagal menghapus karena ada kendala sistem");
-    } finally {
-      setBookToDelete(null); 
+      setBookToDelete(null);
+    },
+    onError: (err: Error) => {
+      alert(err.message || "Gagal menghapus karena ada kendala sistem");
+      setBookToDelete(null);
     }
+  });
+
+  const handleOpenDeleteModal = (id: number, title: string) => {
+    setOpenDropdownId(null); 
+    setBookToDelete({ id, title });
+  };
+
+  const confirmDeleteBook = () => {
+    if (!bookToDelete) return;
+    deleteMutation.mutate(bookToDelete.id);
   };
 
   const handleDamageBook = (title: string) => {
@@ -101,7 +99,6 @@ export function AdminBookList() {
     return matchSearch && matchFilter;
   });
   
-
   return (
     <div className="max-w-[1200px] mx-auto space-y-6 pb-12 relative px-4 sm:px-0">
       
@@ -141,9 +138,10 @@ export function AdminBookList() {
               </button>
               <button
                 onClick={confirmDeleteBook}
-                className="flex-1 h-10 sm:h-11 bg-[#D9206E] rounded-full text-sm sm:text-base font-bold text-white font-quicksand tracking-[-0.02em] hover:bg-[#D9206E]/90 transition-colors"
+                disabled={deleteMutation.isPending}
+                className="flex-1 h-10 sm:h-11 bg-[#D9206E] rounded-full text-sm sm:text-base font-bold text-white font-quicksand tracking-[-0.02em] hover:bg-[#D9206E]/90 transition-colors disabled:opacity-50"
               >
-                Confirm
+                {deleteMutation.isPending ? "Deleting..." : "Confirm"}
               </button>
             </div>
           </div>
@@ -213,7 +211,7 @@ export function AdminBookList() {
         {isLoading ? (
           <div className="p-8 text-center text-[#535862] animate-pulse">Memuat data buku...</div>
         ) : error ? (
-          <div className="p-8 font-bold text-center text-[#EE1D52]">{error}</div>
+          <div className="p-8 font-bold text-center text-[#EE1D52]">{error.message}</div>
         ) : filteredBooks.length === 0 ? (
           <div className="p-8 text-center text-[#535862]">Buku tidak ditemukan</div>
         ) : (

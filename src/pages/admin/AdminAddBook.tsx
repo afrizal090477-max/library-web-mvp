@@ -1,14 +1,16 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { ArrowLeft, UploadCloud, X } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"; 
+
 interface Author { id: number; name: string; }
 interface Category { id: number; name: string; }
-
 
 const API_BASE_URL = "https://library-backend-production-b9cf.up.railway.app";
 
 export function AdminAddBook() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient(); 
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
@@ -22,35 +24,32 @@ export function AdminAddBook() {
   const [authorSearch, setAuthorSearch] = useState("");
   const [selectedAuthorId, setSelectedAuthorId] = useState<number | null>(null);
   const [showAuthorDropdown, setShowAuthorDropdown] = useState(false);
-  const [authors, setAuthors] = useState<Author[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
 
-  useEffect(() => {
-    const fetchOptions = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const headers = { Authorization: `Bearer ${token}` };
-        const [authRes, catRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/authors`, { headers }),
-          fetch(`${API_BASE_URL}/api/categories`, { headers })
-        ]);
-        if (authRes.ok) {
-          const authData = await authRes.json();
-          setAuthors(authData.data?.authors || []);
-        }
-        if (catRes.ok) {
-          const catData = await catRes.json();
-          setCategories(catData.data?.categories || []);
-        }
-      } catch (err) {
-        console.error("Gagal mengambil data dropdown", err);
-      }
-    };
-    fetchOptions();
-  }, []);
+  const token = localStorage.getItem("token");
+  const { data: options } = useQuery({
+    queryKey: ["admin-options"],
+    queryFn: async () => {
+      const headers = { Authorization: `Bearer ${token}` };
+      const [authRes, catRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/authors`, { headers }),
+        fetch(`${API_BASE_URL}/api/categories`, { headers })
+      ]);
+      
+      const authData = authRes.ok ? await authRes.json() : { data: { authors: [] } };
+      const catData = catRes.ok ? await catRes.json() : { data: { categories: [] } };
+      
+      return {
+        authors: authData.data?.authors as Author[] || [],
+        categories: catData.data?.categories as Category[] || []
+      };
+    },
+    enabled: !!token,
+  });
+
+  const authors = options?.authors || [];
+  const categories = options?.categories || [];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -87,14 +86,8 @@ export function AdminAddBook() {
     reader.readAsDataURL(file);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-    setShowToast(false);
-
-    try {
-      const token = localStorage.getItem("token");
+  const addBookMutation = useMutation({
+    mutationFn: async () => {
       let finalAuthorId = selectedAuthorId;
 
       if (!finalAuthorId && authorSearch.trim() !== "") {
@@ -148,21 +141,30 @@ export function AdminAddBook() {
         const errJson = await res.json();
         throw new Error(errJson.message || "Gagal menambahkan buku");
       }
-
+      
+      return res.json();
+    },
+    onSuccess: () => {
       setShowToast(true);
       setFormData({ title: "", categoryId: "", pages: "", description: "", coverImage: "" });
       setAuthorSearch("");
       setSelectedAuthorId(null);
+
+      queryClient.invalidateQueries({ queryKey: ["all-books"] });
       setTimeout(() => {
         navigate("/admin/books");
       }, 2000);
-
-    } catch (err: unknown) {
-      if (err instanceof Error) setError(err.message);
-      else setError("Terjadi kesalahan sistem");
-    } finally {
-      setIsLoading(false);
+    },
+    onError: (err: Error) => {
+      setError(err.message || "Terjadi kesalahan sistem");
     }
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setShowToast(false);
+    addBookMutation.mutate();
   };
 
   const filteredAuthors = authors.filter(a => a.name.toLowerCase().includes(authorSearch.toLowerCase()));
@@ -320,10 +322,10 @@ export function AdminAddBook() {
         <div className="pt-2">
           <button 
             type="submit"
-            disabled={isLoading}
+            disabled={addBookMutation.isPending}
             className="w-full h-12 bg-[#1C65DA] rounded-full flex justify-center items-center gap-2 text-base font-bold text-white font-quicksand tracking-[-0.02em] hover:bg-[#1C65DA]/90 transition-colors disabled:opacity-70"
           >
-            {isLoading ? "Saving..." : "Save"}
+            {addBookMutation.isPending ? "Saving..." : "Save"}
           </button>
         </div>
 

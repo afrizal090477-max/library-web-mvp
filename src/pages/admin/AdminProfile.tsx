@@ -1,55 +1,66 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { Camera, Save, X, User } from "lucide-react";
 import { BASE_URL } from "@/lib/api"; 
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"; 
+
+interface UserProfile {
+  name?: string;
+  email?: string;
+  phone?: string;
+  profilePhoto?: string;
+}
+
+interface AdminProfileFormProps {
+  user: UserProfile;
+  token: string;
+}
 
 export function AdminProfile() {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    profilePhoto: "",
+  const token = localStorage.getItem("token");
+  const { data: user, isLoading, error } = useQuery<UserProfile, Error>({
+    queryKey: ["admin-profile"],
+    queryFn: async () => {
+      const res = await fetch(`${BASE_URL}/me`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (!res.ok) throw new Error("Gagal memuat data profil");
+      
+      const json = await res.json();
+      return json.data?.user || json.data;
+    },
+    enabled: !!token,
   });
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  if (isLoading) {
+    return <div className="p-12 text-center text-[#535862] animate-pulse font-quicksand">Memuat data profil...</div>;
+  }
+
+  if (error || !user) {
+    return (
+      <div className="p-12 text-center text-[#EE1D52] font-quicksand font-bold">
+        {error?.message || "Gagal memuat profil."}
+      </div>
+    );
+  }
+  return <AdminProfileForm user={user} token={token as string} />;
+}
+
+function AdminProfileForm({ user, token }: AdminProfileFormProps) {
+  const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [formData, setFormData] = useState({
+    name: user.name || "",
+    email: user.email || "", 
+    phone: user.phone || "",
+    profilePhoto: user.profilePhoto || "",
+  });
+
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
-
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`${BASE_URL}/me`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        
-        if (!res.ok) throw new Error("Gagal memuat data profil");
-        
-        const json = await res.json();
-        const user = json.data?.user || json.data;
-        
-        setFormData({
-          name: user.name || "",
-          email: user.email || "", 
-          phone: user.phone || "",
-          profilePhoto: user.profilePhoto || "",
-        });
-      } catch (err: unknown) {
-        if (err instanceof Error) setError(err.message);
-        else setError("Terjadi kesalahan sistem");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -84,15 +95,8 @@ export function AdminProfile() {
     reader.readAsDataURL(file);
   };
 
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-    setError(null);
-    setShowToast(false);
-
-    try {
-      const token = localStorage.getItem("token");
+  const updateMutation = useMutation({
+    mutationFn: async () => {
       const res = await fetch(`${BASE_URL}/me`, {
         method: "PATCH",
         headers: { 
@@ -107,24 +111,27 @@ export function AdminProfile() {
       });
 
       if (!res.ok) {
-        const errJson = await res.json();
+        const errJson = await res.json().catch(() => ({}));
         throw new Error(errJson.message || "Gagal mengupdate profil");
       }
-
+      return res.json();
+    },
+    onSuccess: () => {
       setShowToast(true);
+      queryClient.invalidateQueries({ queryKey: ["admin-profile"] });
       setTimeout(() => setShowToast(false), 3000);
-
-    } catch (err: unknown) {
-      if (err instanceof Error) setError(err.message);
-      else setError("Terjadi kesalahan sistem");
-    } finally {
-      setIsSaving(false);
+    },
+    onError: (err: Error) => {
+      setError(err.message || "Terjadi kesalahan sistem");
     }
-  };
+  });
 
-  if (isLoading) {
-    return <div className="p-12 text-center text-[#535862] animate-pulse font-quicksand">Memuat data profil...</div>;
-  }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setShowToast(false);
+    updateMutation.mutate();
+  };
 
   return (
     <div className="max-w-[800px] mx-auto space-y-6 pb-12 relative">
@@ -219,10 +226,10 @@ export function AdminProfile() {
           <div className="pt-2">
             <button 
               type="submit"
-              disabled={isSaving}
+              disabled={updateMutation.isPending}
               className="h-12 px-8 bg-[#1C65DA] rounded-full flex items-center justify-center gap-2 text-base font-bold text-white font-quicksand hover:bg-[#1C65DA]/90 transition-colors disabled:opacity-70 w-full sm:w-fit ml-auto"
             >
-              {isSaving ? "Menyimpan..." : (
+              {updateMutation.isPending ? "Menyimpan..." : (
                 <>
                   <Save size={18} /> Save Changes
                 </>
